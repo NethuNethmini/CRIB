@@ -48,11 +48,11 @@ const Landing: React.FC = () => {
 
             {/* Right-side Navigation Buttons */}
             <div className="flex items-center space-x-6">
-              <button className="text-white bg-main px-4 py-1 rounded-lg font-medium transition-colors"
+              {/* <button className="text-white bg-main px-4 py-1 rounded-lg font-medium transition-colors"
               onClick={() => navigate("/login")}
               >
                Bank Portal
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
