@@ -83,7 +83,7 @@ const CRIBRegister: React.FC = () => {
     console.log("Bank ID:", bankId, "Token:", token);
 
     // Navigate after success
-    navigate("/login");
+    navigate("/crib-login");
   };
 
   // Password rules
