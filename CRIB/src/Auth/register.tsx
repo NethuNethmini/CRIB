@@ -10,6 +10,7 @@ import * as bip39 from "bip39";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { useDispatch } from "react-redux";
 import { setWalletAddress } from "../Store/Slices/WalletSlice";
+import toast from "react-hot-toast";
 
 interface RegisterFormValues {
   bankName: string;
@@ -19,10 +20,11 @@ interface RegisterFormValues {
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [mnemonic,setMnemonic] = useState("")
+  const [mnemonic, setMnemonic] = useState("");
+  console.log(mnemonic)
 
   const apiUrl: string = import.meta.env.VITE_API_URL;
 
@@ -43,71 +45,128 @@ const Register: React.FC = () => {
   };
 
   useEffect(() => {
-        AOS.init({
-          duration: 1000,
-          once: true,
-          easing: "ease-out-cubic",
-        });
-      }, []);
-      
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: "ease-out-cubic",
+    });
+  }, []);
 
-  // bank register
-
-  const registerBank = async (values: RegisterFormValues): Promise<void> => {
+  // Register Bank
+  const registerBank = async (values: RegisterFormValues) => {
     try {
-      const res = await fetch(apiUrl + "bank", {
+      const res = await fetch(`${apiUrl}bank`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      if (res.ok) {
-        const data = await res.json();
-        console.log("Bank Register Successfully", data);
-      } else {
-        console.log("Bank Register Failed");
+
+      if (!res.ok) {
+        console.error("Bank Register Failed");
+        toast.error("Bank Register Failed")
+        return null;
       }
-    } catch (error: any) {
-      console.log("Bank Register Failed");
+
+      const data = await res.json();
+      toast.success("Bank Registered Successfully")
+      console.log("Bank Registered:", data);
+      return data;
+    } catch (error) {
+      toast.error("Bank Register Failed")
+      console.error("Bank Register Failed:", error);
+      return null;
     }
   };
 
-  //create wallet address
-
+  // Create Wallet (generate mnemonic + wallet address)
   const createWallet = async () => {
-  try {
-    // Generate mnemonic
-    const mnemonic = bip39.generateMnemonic(128);
-    setMnemonic(mnemonic)
-     console.log("🪄 Generated Mnemonic:", mnemonic);
+    try {
+      const mnemonic = bip39.generateMnemonic(128);
+      setMnemonic(mnemonic);
+      console.log(mnemonic)
+      console.log("Generated Mnemonic:", mnemonic);
+      localStorage.setItem("wallet", JSON.stringify({ mnemonic }));
 
-    // Create wallet (Cosmos prefix)
-    const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-      prefix: "cosmos",
-    });
+      const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        prefix: "cosmos",
+      });
 
-    // Get wallet address
-    const [{ address }] = await wallet.getAccounts();
-    console.log("Wallet Address:", address); 
-    dispatch(setWalletAddress(address));
-    navigate("/login");
+      const [{ address }] = await wallet.getAccounts();
+      console.log("Wallet Address:", address);
+     dispatch(setWalletAddress({ address, mnemonic }));
 
-
-
-  }catch(error:any){
-    console.error("Failed wallet create")
-  }}
-
-
-  //handle submit
-  const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("Form Data:", values);
-    await registerBank(values);
-    await createWallet()
-    
+      return { mnemonic, address };
+    } catch (error) {
+      console.error("Failed to create wallet:", error);
+      return null;
+    }
   };
 
+  // Save Wallet 
+  const saveWallet = async (
+    values: {
+      bankId: string;
+      bankName: string;
+      creator: string;
+      mnemonic: string;
+    },
+    token: string
+  ): Promise<void> => {
+    try {
+      const res = await fetch(`${apiUrl}bank/save/wallet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("Wallet Save Failed:", err);
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Wallet Saved Successfully:", data);
+    } catch (error) {
+      console.error("Wallet Save Error:", error);
+    }
+  };
+
+  //Handle Form Submit
+  const handleSubmit = async (values: RegisterFormValues) => {
+    console.log("Form Data:", values);
+
+    //  Register the bank
+    const bankResponse = await registerBank(values);
+    if (!bankResponse) return;
+
+    const bankId = bankResponse?.bankId;
+    const token = bankResponse?.token;
+    console.log("Bank ID:", bankId, "Token:", token);
+
+    // Create wallet
+    const walletData = await createWallet();
+    if (!walletData) return;
+
+    // Save wallet to backend
+    await saveWallet(
+      {
+        bankId,
+        bankName: values.bankName,
+        creator: bankId,
+        mnemonic: walletData.mnemonic,
+      },
+      token
+    );
+
+    // Navigate after success
+    navigate("/bank-login");
+  };
+
+  // Password rules
   const getPasswordRequirements = (password: string) => [
     { text: "Minimum 8 Characters", met: password.length >= 8 },
     { text: "Includes at least one number", met: /\d/.test(password) },
@@ -119,15 +178,15 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-r from-blue-50 via-white to-purple-50 p-6 relative overflow-hidden">
-      {/* Login Card */}
       <div className="relative w-full max-w-md">
-        {/* Logo/Brand */}
-        <div className="" data-aos="fade-in">
-        <Logo />
+        <div data-aos="fade-in">
+          <Logo />
         </div>
-        
-        {/* Card */}
-        <div className="relative w-full max-w-md bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border border-white/20 p-6 z-10 mt-6" data-aos="zoom-in">
+
+        <div
+          className="relative w-full max-w-md bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border border-white/20 p-6 z-10 mt-6"
+          data-aos="zoom-in"
+        >
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -152,7 +211,7 @@ const Register: React.FC = () => {
                   <ErrorMessage
                     name="bankName"
                     component="div"
-                    className="text-red-500 text-xs mt-1"
+                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
@@ -184,10 +243,9 @@ const Register: React.FC = () => {
                   <ErrorMessage
                     name="password"
                     component="div"
-                    className="text-red-500 text-xs mt-1"
+                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
 
-                  {/* Password Requirements */}
                   <div className="mt-2 space-y-1">
                     {getPasswordRequirements(values.password).map((req, i) => (
                       <div
@@ -245,7 +303,7 @@ const Register: React.FC = () => {
                   <ErrorMessage
                     name="confirmPassword"
                     component="div"
-                    className="text-red-500 text-xs mt-1"
+                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
@@ -268,21 +326,10 @@ const Register: React.FC = () => {
                   )}
                 </button>
 
-                {/* Divider */}
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500">or</span>
-                  </div>
-                </div>
-
-                {/* Login Link */}
                 <p className="text-center text-sm text-gray-600 mt-4">
                   Already Registered?{" "}
                   <span
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate("/bank-login")}
                     className="text-main font-semibold cursor-pointer"
                   >
                     Login

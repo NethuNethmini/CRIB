@@ -3,40 +3,27 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import { Lock, Eye, EyeOff, ArrowRight, Check, User } from "lucide-react";
-import Logo from "../../Components/Logo/logo";
+import Logo from "../Components/Logo/logo";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import * as bip39 from "bip39";
-import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { useDispatch } from "react-redux";
-import { setWalletAddress } from "../../Store/Slices/WalletSlice";
-import { useAppSelector } from "../../Store/hooks";
+
 
 interface RegisterFormValues {
-  name: string;
+  userName: string;
   password: string;
-  email: string;
   confirmPassword: string;
 }
 
-const Verify: React.FC = () => {
+const CRIBRegister: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [mnemonic, setMnemonic] = useState("");
-  console.log(mnemonic)
- const token = useAppSelector((state)=>state.auth.auth)
-   console.log(token)
 
   const apiUrl: string = import.meta.env.VITE_API_URL;
 
   const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    email: Yup.string()
-      .email("Enter a valid email address")
-      .required("Email is required"),
-
+    userName: Yup.string().required("User name is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
@@ -46,8 +33,7 @@ const Verify: React.FC = () => {
   });
 
   const initialValues: RegisterFormValues = {
-    name: "",
-    email:"",
+    userName: "",
     password: "",
     confirmPassword: "",
   };
@@ -63,7 +49,7 @@ const Verify: React.FC = () => {
   // Register CRIB Member
   const cribMemberReg = async (values: RegisterFormValues) => {
     try {
-      const res = await fetch(`${apiUrl}users`, {
+      const res = await fetch(`${apiUrl}crib`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -83,88 +69,22 @@ const Verify: React.FC = () => {
     }
   };
 
-  // Create Wallet (generate mnemonic + wallet address)
-    const createWallet = async () => {
-      try {
-        const mnemonic = bip39.generateMnemonic(128);
-        setMnemonic(mnemonic);
-        console.log("Generated Mnemonic:", mnemonic);
-        localStorage.setItem("wallet", JSON.stringify({ mnemonic }));
   
-        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-          prefix: "cosmos",
-        });
-  
-        const [{ address }] = await wallet.getAccounts();
-        console.log("Wallet Address:", address);
-           dispatch(setWalletAddress({ address, mnemonic }));
-  
-        return { mnemonic, address };
-      } catch (error) {
-        console.error("Failed to create wallet:", error);
-        return null;
-      }
-    };
-  
-    // Save Wallet 
-    const saveWallet = async (
-      values: {
-        userId: string;
-        userName: string;
-        creator: string;
-        mnemonic: string;
-      },
-      token: string
-    ): Promise<void> => {
-      try {
-        const res = await fetch(`${apiUrl}users/save/wallet`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-             Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(values),
-        });
-  
-        if (!res.ok) {
-          const err = await res.text();
-          console.error("Wallet Save Failed:", err);
-          return;
-        }
-  
-        const data = await res.json();
-        console.log("Wallet Saved Successfully:", data);
-      } catch (error) {
-        console.error("Wallet Save Error:", error);
-      }
-    };
-  
-
- const handleSubmit = async (values: RegisterFormValues) => {
+  //Handle Form Submit
+  const handleSubmit = async (values: RegisterFormValues) => {
     console.log("Form Data:", values);
 
-    //  Register a user
-    const userResponse = await cribMemberReg(values);
-    if (!userResponse) return;
+    //  Register CRIB Member
+    const bankResponse = await cribMemberReg(values);
+    if (!bankResponse) return;
 
-    const userId = userResponse?.id;
-    const userName=userResponse.name;
-    
+    const bankId = bankResponse?.bankId;
+    const token = bankResponse?.token;
+    console.log("Bank ID:", bankId, "Token:", token);
 
-    // Create wallet
-    const walletData = await createWallet();
-    if (!walletData) return;
-
-    // Save wallet to backend
-    await saveWallet(
-      {
-        userId,
-        userName,
-        creator: userId,
-        mnemonic: walletData.mnemonic,
-      },
-      token
-    );}
+    // Navigate after success
+    navigate("/login");
+  };
 
   // Password rules
   const getPasswordRequirements = (password: string) => [
@@ -203,36 +123,15 @@ const Verify: React.FC = () => {
                     <User className="absolute left-3 top-3.5 text-gray-400 w-4 h-4" />
                     <Field
                       type="text"
-                      name="name"
+                      name="userName"
                       placeholder="Enter User Name"
                       className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
                   <ErrorMessage
-                    name="name"
+                    name="userName"
                     component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-                  
-                  {/*Email*/}
-                  <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Email
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3.5 text-gray-400 w-4 h-4" />
-                    <Field
-                      type="email"
-                      name="email"
-                      placeholder="Enter Your Email"
-                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <ErrorMessage
-                    name="email"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
+                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
@@ -264,7 +163,7 @@ const Verify: React.FC = () => {
                   <ErrorMessage
                     name="password"
                     component="div"
-                    className="text-red-500 text-xs mt-1"
+                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
 
                   <div className="mt-2 space-y-1">
@@ -324,7 +223,7 @@ const Verify: React.FC = () => {
                   <ErrorMessage
                     name="confirmPassword"
                     component="div"
-                    className="text-red-500 text-xs mt-1"
+                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
@@ -365,4 +264,4 @@ const Verify: React.FC = () => {
   );
 };
 
-export default Verify;
+export default CRIBRegister;

@@ -22,7 +22,7 @@ function Dashboard() {
             >
               Welcome back,{" "}
               <span className="bg-linear-to-r from-main to-[#06b6d4] bg-clip-text text-transparent">
-                ALICE
+               JANE
               </span>
             </motion.h1>
 

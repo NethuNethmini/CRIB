@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
-import { Shield, Rocket, CheckCircle, Lock, ArrowRight } from "lucide-react";
+import {  Rocket, CheckCircle, Lock, ArrowRight, TrendingUp } from "lucide-react";
 import Logo from "../Components/Logo/logo";
 import Landingimg from "../assets/Landing7.jpg"
 import Lankdingimg2 from "../assets/Landing6.jpg"
 import { useNavigate } from "react-router-dom";
+import RoleDropdown from "../Components/Dropdown/dropdown";
 
-// AOS-like animation hook
+// AOS-like animation hook (Kept as is for functionality)
 const useScrollAnimation = () => {
   useEffect(() => {
     const observerOptions = {
@@ -30,13 +31,16 @@ const useScrollAnimation = () => {
 };
 
 const Landing: React.FC = () => {
-  const navigate= useNavigate()
+  const navigate = useNavigate();
   useScrollAnimation();
 
+  const primaryColor = "text-cyan-500";
+  const primaryBg = "bg-cyan-600 hover:bg-cyan-700";
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-sans">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm sticky top-0 z-50 rounded-bl-2xl rounded-br-2xl">
+      <nav className="bg-white sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo Section */}
@@ -48,104 +52,104 @@ const Landing: React.FC = () => {
 
             {/* Right-side Navigation Buttons */}
             <div className="flex items-center space-x-6">
-              {/* <button className="text-white bg-main px-4 py-1 rounded-lg font-medium transition-colors"
-              onClick={() => navigate("/login")}
-              >
-               Bank Portal
-              </button> */}
+              <RoleDropdown />
             </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="py-22 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto text-center">
           <h1
-            className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-gray-800  to-[#06b6d4] bg-clip-text text-transparent mb-6 leading-tight aos-fade-up"
+            className="text-6xl sm:text-4xl lg:text-7xl font-extrabold bg-gradient-to-r from-gray-700 via-gray-700 to-cyan-600 bg-clip-text text-transparent mb-8 leading-tight tracking-tighter aos-fade-up"
             data-aos="fade-up"
           >
-            Your Official Self-Inquiry Credit Report from CRIB
+            Your Official Self-Inquiry <br className="hidden sm:inline"/> Credit Report
           </h1>
           <p
-            className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto aos-fade-up"
+            className="text-xl sm:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto aos-fade-up"
             data-aos="fade-up"
             data-aos-delay="100"
           >
             Access your comprehensive credit history securely and conveniently
             through the official CRIB Customer Access Portal.
           </p>
-          <div className="flex items-center justify-center cursor-pointer mt-4">
+          <div className="flex items-center justify-center cursor-pointer">
             <button
-              className="group bg-main  text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer"
-             onClick={() => navigate("/verify")}
-
+              className={`group ${primaryBg} text-white font-bold px-10 py-5 rounded-xl text-xl transition-all duration-300 transform hover:scale-[1.02] shadow-2xl shadow-cyan-400/50 flex items-center justify-center gap-3 cursor-pointer`}
+              onClick={() => navigate("/cus-login")}
               data-aos="fade-up"
               data-aos-delay="200"
             >
               Apply for MyReport
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
             </button>
           </div>
         </div>
       </section>
+      
+      <div className="h-0.5 w-full bg-gradient-to-r from-gray-50 via-cyan-200 to-gray-50"></div>
 
       {/* Why Get Your CRIB Report Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-3 gap-12 items-center">
           <div
-            className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-8 aos-fade-right"
+            className="lg:col-span-2 bg-white rounded-3xl shadow-xl p-10 border border-gray-100 aos-fade-right"
             data-aos="fade-right"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Get Your CRIB Report?
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Why Get Your <span className={primaryColor}>CRIB Report</span>?
             </h2>
-            <p className="text-gray-600 mb-8">
-              Understand your financial standing, prepare for loan applications,
-              and ensure the accuracy of your credit data.
+            <p className="text-lg text-gray-600 mb-10">
+              Understanding your financial footprint is the first step towards financial freedom. Prepare for major applications and verify your data's accuracy.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex flex-col">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <Shield className="w-6 h-6 text-blue-600" />
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="flex flex-col p-4 bg-gray-50 rounded-xl">
+                <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+                  <TrendingUp className="w-7 h-7 text-cyan-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Financial Health Check
                 </h3>
                 <p className="text-gray-600">
-                  Get a clear picture of your credit history and score to make
-                  informed financial decisions.
+                  Get a clear picture of your credit history to make
+                  informed financial decisions and plan your future.
                 </p>
               </div>
 
-              <div className="flex flex-col">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <Rocket className="w-6 h-6 text-blue-600" />
+              <div className="flex flex-col p-4 bg-gray-50 rounded-xl">
+                <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+                  <Rocket className="w-7 h-7 text-cyan-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Loan Application Readiness
                 </h3>
                 <p className="text-gray-600">
-                  A good credit report is key to unlocking better loan terms and
-                  faster approvals.
+                  A strong credit report is essential for unlocking better loan terms and
+                  faster approvals from financial institutions.
                 </p>
               </div>
             </div>
           </div>
 
-          <div>
-            <img src={Lankdingimg2} className="w-full h-full object-cover rounded-2xl"/>
+          <div className="h-full">
+            <img 
+                src={Lankdingimg2} 
+                className="w-full h-full object-cover rounded-3xl shadow-xl hover:shadow-2xl transition-shadow duration-300"
+                alt="Credit report in hand"
+            />
           </div>
         </div>
       </section>
 
       {/* Quick, Secure, and Digital Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div
-              className="relative rounded-2xl overflow-hidden shadow-2xl aos-fade-right"
+              className="relative rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 aos-fade-right"
               data-aos="fade-right"
             >
               <img
@@ -157,40 +161,39 @@ const Landing: React.FC = () => {
 
             <div className="aos-fade-left" data-aos="fade-left">
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Quick, Secure, and Digital
+                Quick, <span className={primaryColor}>Secure</span>, and Digital
               </h2>
               <p className="text-gray-600 mb-10 text-lg">
                 Our streamlined online process ensures you get your report
-                efficiently while keeping your data protected.
+                efficiently, right from your home, while keeping your data absolutely protected.
               </p>
 
-              <div className="space-y-8">
+              <div className="space-y-10">
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Lock className="w-6 h-6 text-blue-600" />
+                  <div className="flex-shrink-0 w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center shadow-lg">
+                    <Lock className="w-7 h-7 text-blue-600" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      Secure and Confidential
+                      End-to-End Security
                     </h3>
                     <p className="text-gray-600">
                       Your personal data is protected with the highest security
-                      standards throughout the process.
+                      standards and encryption throughout the entire reporting process.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-blue-600" />
+                  <div className="flex-shrink-0 w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center shadow-lg">
+                    <CheckCircle className="w-7 h-7 text-blue-600" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
                       Simple Online Verification
                     </h3>
                     <p className="text-gray-600">
-                      Verify your identity from the comfort of your home with
-                      our easy-to-follow digital steps.
+                      Verify your identity with our easy-to-follow digital steps, eliminating the need for complex paperwork or branch visits.
                     </p>
                   </div>
                 </div>
@@ -200,73 +203,24 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer (Minimalist Update) */}
       <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-12 mb-8">
-            {/* <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-teal-600 rounded flex items-center justify-center text-white font-bold">
-                  CB
-                </div>
-              </div>
-              <p className="text-sm mb-2">
-                Credit Information Bureau of Sri Lanka
-              </p>
-              <p className="text-sm mb-2">
-                No. 12, Sir Baron Jayathilaka Mawatha, Colombo 01.
-              </p>
-              <p className="text-sm">+94 11 213 1313</p>
-            </div> */}
-
-            <div>
-              {/* <h3 className="font-semibold text-white mb-4">QUICK LINKS</h3> */}
-              <ul className="space-y-2">
-                {/* <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    About CRIB
-                  </a>
-                </li> */}
-                {/* <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    FAQs
-                  </a>
-                </li> */}
-                {/* <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Contact Us
-                  </a>
-                </li> */}
-              </ul>
-            </div>
-
-            <div>
-              {/* <h3 className="font-semibold text-white mb-4">LEGAL</h3> */}
-              <ul className="space-y-2">
-                {/* <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </li> */}
-                {/* <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                </li> */}
-              </ul>
-            </div>
-          </div>
-
+          {/* Removed the commented-out layout for a cleaner look */}
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            {/* <p>
+            <p className="mb-2">
               © 2024 Credit Information Bureau of Sri Lanka. All Rights
               Reserved.
-            </p> */}
+            </p>
+            <p className="text-xs text-gray-500">
+                Official CRIB Customer Access Portal
+            </p>
           </div>
         </div>
       </footer>
 
       <style>{`
+        /* AOS-like styles (Kept as is) */
         [data-aos] {
           opacity: 0;
           transition: opacity 0.8s ease, transform 0.8s ease;

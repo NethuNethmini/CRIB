@@ -1,42 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { Lock, Eye, EyeOff, ArrowRight, Building2 } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../Components/Logo/logo";
+import Logo from "../../Components/Logo/logo";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Buffer } from "buffer";
-import { setAuthData } from "../Store/Slices/AuthSlice";
+import { setAuthData } from "../../Store/Slices/AuthSlice";
 import { useDispatch } from "react-redux";
-import toast from "react-hot-toast";
 
 window.Buffer = Buffer;
 
 interface LoginFormValues {
-  bankName: string;
+  userName: string;
   password: string;
   bankId: string;
   creator: string;
 }
 
 const initialValues: LoginFormValues = {
-  bankName: "",
+  userName: "",
   password: "",
   bankId: "",
   creator: "",
 };
 
-const Login: React.FC = () => {
+const CustomerLogin: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const apiUrl: string = import.meta.env.VITE_API_URL;
-  const RPC_ENDPOINT: string = import.meta.env.VITE_RPC_ENDPOINT;
-  console.log("RPC_ENDPOINT:", RPC_ENDPOINT);
+ 
 
   const validationSchema = Yup.object().shape({
-    bankName: Yup.string().required("Bank Name is required"),
+    userName: Yup.string().required("User Name is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
@@ -47,34 +45,32 @@ const Login: React.FC = () => {
   }, []);
 
   
-
-  // Bank login
+  //  Bank login
   const bankLogin = async (values: LoginFormValues): Promise<void> => {
     try {
-      const res = await fetch(`${apiUrl}bank/login`, {
+      const res = await fetch(`${apiUrl}crib/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bankName: values.bankName,
-          password: values.password,
+          ...values,
         }),
       });
 
       if (!res.ok) {
         console.log("Login Failed");
-        toast.error("Login failed. Please check your credentials.");
         return;
       }
 
       const data = await res.json();
-      toast.success("Login Successful")
       console.log("Login Successful:", data);
+      
+    
 
       dispatch(
         setAuthData({
           auth: data.token,
           refresh: data.refreshToken,
-          role: data.role || "bank",
+        role: data.role || "crib",
           bankName: data.bankName,
           bankId: data.bankId,
           username: data.username,
@@ -82,21 +78,13 @@ const Login: React.FC = () => {
         })
       );
 
-      const { token, bankId} = data;
 
-      if (!bankId || !token) {
-        console.error("Missing bankId or token in login response");
-        return;
-      }
+      
 
-      // Sign bank user with mnemonic
-      // await signBankUser(bankId, bankName, licenseNumber, mnemonic, token);
-
-      navigate("/dashboard");
+     
+      navigate("/crib-requests");
     } catch (error: any) {
-      toast.error("Login Failed");
       console.error("Login Error:", error);
-      toast.error("An error occurred during login. Please try again.");
     }
   };
 
@@ -107,7 +95,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-r from-blue-50 via-white to-purple-50 p-6 relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-r from-blue-50 via-white to-purple-50 p-6 relative overflow-hidden">
       <div className="relative w-full max-w-md">
         <div data-aos="fade-in">
           <Logo />
@@ -133,26 +121,26 @@ const Login: React.FC = () => {
           >
             {({ isSubmitting }) => (
               <Form className="space-y-5">
-                {/* Bank Name */}
+                {/* User Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bank Name
+                    User Name
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Building2 className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5 text-gray-400" />
                     </div>
                     <Field
                       type="text"
-                      name="bankName"
+                      name="userName"
                       placeholder="Enter Bank Name"
                       className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
                   <ErrorMessage
-                    name="bankName"
+                    name="userName"
                     component="p"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-xs mt-1.5 ml-1"
                   />
                 </div>
 
@@ -186,7 +174,7 @@ const Login: React.FC = () => {
                   <ErrorMessage
                     name="password"
                     component="p"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-xs mt-1.5 ml-1"
                   />
                 </div>
 
@@ -223,11 +211,11 @@ const Login: React.FC = () => {
 
           <div className="text-center">
             <p className="text-gray-600 text-sm">
-              Don't have an account?{" "}
+              Don’t have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate("/bank-register")}
-                className="text-main font-semibold hover:underline transition"
+                onClick={() => navigate("/cus-register")}
+                className="text-main font-semibold transition"
               >
                 Register
               </button>
@@ -239,4 +227,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default CustomerLogin;
