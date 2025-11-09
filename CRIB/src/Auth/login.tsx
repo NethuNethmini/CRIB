@@ -46,8 +46,6 @@ const Login: React.FC = () => {
     AOS.init({ duration: 1000, once: true, easing: "ease-out-cubic" });
   }, []);
 
-  
-
   // Bank login
   const bankLogin = async (values: LoginFormValues): Promise<void> => {
     try {
@@ -61,15 +59,14 @@ const Login: React.FC = () => {
       });
 
       if (!res.ok) {
-        console.log("Login Failed");
         toast.error("Login failed. Please check your credentials.");
         return;
       }
 
       const data = await res.json();
-      toast.success("Login Successful")
-      console.log("Login Successful:", data);
+      toast.success("Login Successful");
 
+      // Save auth data 
       dispatch(
         setAuthData({
           auth: data.token,
@@ -82,21 +79,64 @@ const Login: React.FC = () => {
         })
       );
 
-      const { token, bankId} = data;
+      const currentStatus = await getStatus(
+        data.bankId,
+        data.bankName,
+        data.token
+      );
 
-      if (!bankId || !token) {
-        console.error("Missing bankId or token in login response");
-        return;
+      // Navigate based on status
+      console.log("status abc",currentStatus)
+      if (currentStatus === "approved") {
+        navigate("/accounts");
+      } else if (currentStatus === "pending") {
+        navigate("/dashboard");
+      } else {
+        navigate("/dashboard");
       }
-
-      // Sign bank user with mnemonic
-      // await signBankUser(bankId, bankName, licenseNumber, mnemonic, token);
-
-      navigate("/dashboard");
     } catch (error: any) {
-      toast.error("Login Failed");
       console.error("Login Error:", error);
       toast.error("An error occurred during login. Please try again.");
+    }
+  };
+
+
+  //get status 
+  const getStatus = async (
+    bankId: string,
+    bankName: string,
+    token: string
+  ): Promise<string> => {
+    if (!bankName) return "not_requested";
+
+    try {
+      const res = await fetch(
+        `${apiUrl}bank/get/status?bankId=${encodeURIComponent(
+          bankId
+        )}&bankName=${encodeURIComponent(bankName)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        if (res.status === 404) return "not_requested";
+        console.error("Status API error", res.statusText);
+        return "not_requested";
+      }
+
+      const data = await res.json();
+      console.log("New Data",data)
+      if (data.status=== "approved") return "approved";
+      if (data.status === "pending") return "pending";
+      return "not_requested";
+    } catch (error) {
+      console.error("Network error:", error);
+      return "not_requested";
     }
   };
 

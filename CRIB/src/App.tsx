@@ -27,7 +27,7 @@ import Dashboard from "./Pages/Bank/Dashboard";
 function App() {
   return (
     <div className="app-container">
-      {/* 🔹 Global Toaster */}
+      {/* Global Toaster */}
       <Toaster
         position="top-center"
         reverseOrder={false}
@@ -40,7 +40,7 @@ function App() {
       />
 
       <Routes>
-        {/* 🔹 Public Routes */}
+        {/* Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />
           <Route path="/bank-login" element={<LoginBank />} />
@@ -52,7 +52,7 @@ function App() {
           
         </Route>
 
-        {/* 🔹 Bank Layout Routes */}
+        {/* Bank Layout Routes */}
         <Route
           element={
             <ProtectedRoute allowed={["bank"]}>
@@ -65,7 +65,7 @@ function App() {
           ))}
         </Route>
 
-        {/* 🔹 Bank Standalone Page (Outside Layout) */}
+        {/* Bank (Outside Layout) */}
         <Route
           path="/dashboard"
           element={
@@ -75,7 +75,7 @@ function App() {
           }
         />
 
-        {/* 🔹 CRIB Layout Routes */}
+        {/*CRIB Layout Routes */}
         <Route
           element={
             <ProtectedRoute allowed={["crib"]}>

@@ -9,6 +9,55 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
 export const protobufPackage = "crib.creditfacility.v1";
 
+export enum FacilityStatus {
+  /** FACILITY_STATUS_UNSPECIFIED - Default */
+  FACILITY_STATUS_UNSPECIFIED = 0,
+  /** ACTIVE - Currently active facility */
+  ACTIVE = 1,
+  /** CLOSED - Fully paid and closed */
+  CLOSED = 2,
+  /** DEFAULTED - Defaulted on payments */
+  DEFAULTED = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function facilityStatusFromJSON(object: any): FacilityStatus {
+  switch (object) {
+    case 0:
+    case "FACILITY_STATUS_UNSPECIFIED":
+      return FacilityStatus.FACILITY_STATUS_UNSPECIFIED;
+    case 1:
+    case "ACTIVE":
+      return FacilityStatus.ACTIVE;
+    case 2:
+    case "CLOSED":
+      return FacilityStatus.CLOSED;
+    case 3:
+    case "DEFAULTED":
+      return FacilityStatus.DEFAULTED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return FacilityStatus.UNRECOGNIZED;
+  }
+}
+
+export function facilityStatusToJSON(object: FacilityStatus): string {
+  switch (object) {
+    case FacilityStatus.FACILITY_STATUS_UNSPECIFIED:
+      return "FACILITY_STATUS_UNSPECIFIED";
+    case FacilityStatus.ACTIVE:
+      return "ACTIVE";
+    case FacilityStatus.CLOSED:
+      return "CLOSED";
+    case FacilityStatus.DEFAULTED:
+      return "DEFAULTED";
+    case FacilityStatus.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export enum PaymentStatus {
   PAYMENT_STATUS_UNSPECIFIED = 0,
   ON_TIME = 1,
@@ -63,7 +112,7 @@ export interface CreditFacility {
   facilityType: string;
   loanAmount: number;
   outstandingBalance: number;
-  status: string;
+  status: FacilityStatus;
   openedDate: string;
   closedDate: string;
   paymentHistory: PaymentRecord[];
@@ -86,7 +135,7 @@ function createBaseCreditFacility(): CreditFacility {
     facilityType: "",
     loanAmount: 0,
     outstandingBalance: 0,
-    status: "",
+    status: 0,
     openedDate: "",
     closedDate: "",
     paymentHistory: [],
@@ -117,8 +166,8 @@ export const CreditFacility: MessageFns<CreditFacility> = {
     if (message.outstandingBalance !== 0) {
       writer.uint32(56).uint64(message.outstandingBalance);
     }
-    if (message.status !== "") {
-      writer.uint32(66).string(message.status);
+    if (message.status !== 0) {
+      writer.uint32(64).int32(message.status);
     }
     if (message.openedDate !== "") {
       writer.uint32(74).string(message.openedDate);
@@ -199,11 +248,11 @@ export const CreditFacility: MessageFns<CreditFacility> = {
           continue;
         }
         case 8: {
-          if (tag !== 66) {
+          if (tag !== 64) {
             break;
           }
 
-          message.status = reader.string();
+          message.status = reader.int32() as any;
           continue;
         }
         case 9: {
@@ -256,7 +305,7 @@ export const CreditFacility: MessageFns<CreditFacility> = {
       facilityType: isSet(object.facilityType) ? globalThis.String(object.facilityType) : "",
       loanAmount: isSet(object.loanAmount) ? globalThis.Number(object.loanAmount) : 0,
       outstandingBalance: isSet(object.outstandingBalance) ? globalThis.Number(object.outstandingBalance) : 0,
-      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      status: isSet(object.status) ? facilityStatusFromJSON(object.status) : 0,
       openedDate: isSet(object.openedDate) ? globalThis.String(object.openedDate) : "",
       closedDate: isSet(object.closedDate) ? globalThis.String(object.closedDate) : "",
       paymentHistory: globalThis.Array.isArray(object?.paymentHistory)
@@ -289,8 +338,8 @@ export const CreditFacility: MessageFns<CreditFacility> = {
     if (message.outstandingBalance !== 0) {
       obj.outstandingBalance = Math.round(message.outstandingBalance);
     }
-    if (message.status !== "") {
-      obj.status = message.status;
+    if (message.status !== 0) {
+      obj.status = facilityStatusToJSON(message.status);
     }
     if (message.openedDate !== "") {
       obj.openedDate = message.openedDate;
@@ -319,7 +368,7 @@ export const CreditFacility: MessageFns<CreditFacility> = {
     message.facilityType = object.facilityType ?? "";
     message.loanAmount = object.loanAmount ?? 0;
     message.outstandingBalance = object.outstandingBalance ?? 0;
-    message.status = object.status ?? "";
+    message.status = object.status ?? 0;
     message.openedDate = object.openedDate ?? "";
     message.closedDate = object.closedDate ?? "";
     message.paymentHistory = object.paymentHistory?.map((e) => PaymentRecord.fromPartial(e)) || [];

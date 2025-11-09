@@ -56,7 +56,12 @@ export interface QueryGetBankUserRequest {
 
 /** QueryGetBankUserResponse defines the QueryGetBankUserResponse message. */
 export interface QueryGetBankUserResponse {
+  status: string;
+  code: number;
+  message: string;
   bankUser: BankUser | undefined;
+  requestId: string;
+  timestamp: string;
 }
 
 /** QueryAllBankUserRequest defines the QueryAllBankUserRequest message. */
@@ -572,13 +577,28 @@ export const QueryGetBankUserRequest: MessageFns<QueryGetBankUserRequest> = {
 };
 
 function createBaseQueryGetBankUserResponse(): QueryGetBankUserResponse {
-  return { bankUser: undefined };
+  return { status: "", code: 0, message: "", bankUser: undefined, requestId: "", timestamp: "" };
 }
 
 export const QueryGetBankUserResponse: MessageFns<QueryGetBankUserResponse> = {
   encode(message: QueryGetBankUserResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== "") {
+      writer.uint32(10).string(message.status);
+    }
+    if (message.code !== 0) {
+      writer.uint32(16).int32(message.code);
+    }
+    if (message.message !== "") {
+      writer.uint32(26).string(message.message);
+    }
     if (message.bankUser !== undefined) {
-      BankUser.encode(message.bankUser, writer.uint32(10).fork()).join();
+      BankUser.encode(message.bankUser, writer.uint32(34).fork()).join();
+    }
+    if (message.requestId !== "") {
+      writer.uint32(42).string(message.requestId);
+    }
+    if (message.timestamp !== "") {
+      writer.uint32(50).string(message.timestamp);
     }
     return writer;
   },
@@ -595,7 +615,47 @@ export const QueryGetBankUserResponse: MessageFns<QueryGetBankUserResponse> = {
             break;
           }
 
+          message.status = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.code = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
           message.bankUser = BankUser.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.timestamp = reader.string();
           continue;
         }
       }
@@ -608,13 +668,35 @@ export const QueryGetBankUserResponse: MessageFns<QueryGetBankUserResponse> = {
   },
 
   fromJSON(object: any): QueryGetBankUserResponse {
-    return { bankUser: isSet(object.bankUser) ? BankUser.fromJSON(object.bankUser) : undefined };
+    return {
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      code: isSet(object.code) ? globalThis.Number(object.code) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      bankUser: isSet(object.bankUser) ? BankUser.fromJSON(object.bankUser) : undefined,
+      requestId: isSet(object.requestId) ? globalThis.String(object.requestId) : "",
+      timestamp: isSet(object.timestamp) ? globalThis.String(object.timestamp) : "",
+    };
   },
 
   toJSON(message: QueryGetBankUserResponse): unknown {
     const obj: any = {};
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.code !== 0) {
+      obj.code = Math.round(message.code);
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
     if (message.bankUser !== undefined) {
       obj.bankUser = BankUser.toJSON(message.bankUser);
+    }
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    if (message.timestamp !== "") {
+      obj.timestamp = message.timestamp;
     }
     return obj;
   },
@@ -624,9 +706,14 @@ export const QueryGetBankUserResponse: MessageFns<QueryGetBankUserResponse> = {
   },
   fromPartial<I extends Exact<DeepPartial<QueryGetBankUserResponse>, I>>(object: I): QueryGetBankUserResponse {
     const message = createBaseQueryGetBankUserResponse();
+    message.status = object.status ?? "";
+    message.code = object.code ?? 0;
+    message.message = object.message ?? "";
     message.bankUser = (object.bankUser !== undefined && object.bankUser !== null)
       ? BankUser.fromPartial(object.bankUser)
       : undefined;
+    message.requestId = object.requestId ?? "";
+    message.timestamp = object.timestamp ?? "";
     return message;
   },
 };

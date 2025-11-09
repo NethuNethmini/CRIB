@@ -17,21 +17,37 @@ import { DirectSecp256k1HdWallet, Registry } from "@cosmjs/proto-signing";
 import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 import { MsgCreateCribAccount } from "../../../Proto/crib/user/v1/tx";
 import { useAppSelector } from "../../Store/hooks";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 const RPC_ENDPOINT = import.meta.env.VITE_RPC_ENDPOINT;
+const API_URL = import.meta.env.VITE_API_URL;
 
-const AddUserForm = () => {
-  const { username } = useAppSelector((state) => state.auth);
+interface FormValues {
+  nic: string;
+  fullname: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  email: string;
+  nicFrontCid: File | null;
+  nicBackCid: File | null;
+}
+
+const AddUserForm: React.FC = () => {
+  const { username } = useAppSelector((state) => state.auth) as any;
+  const mnemonic = useAppSelector((state) => state.auth.mnemonic) || "";
+  const token = useAppSelector((state) => state.auth.auth) || "";
+  const bankName = useAppSelector((state)=> state.auth.bankName) || "";
+  console.log("bnk",bankName)
+
+  const bankId = useAppSelector((state) => state.auth.bankId) || "";
+  console.log("bnkid",bankId)
 
   const [nicFrontPreview, setNicFrontPreview] = useState<string | null>(null);
   const [nicBackPreview, setNicBackPreview] = useState<string | null>(null);
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
 
-  const mnemonic = localStorage.getItem("mnemonic");
-  const token = localStorage.getItem("token");
-
-  const initialValues = {
+  const initialValues: FormValues = {
     nic: "",
     fullname: "",
     phoneNumber: "",
@@ -53,12 +69,13 @@ const AddUserForm = () => {
     file: File,
     setPreview: (url: string | null) => void,
     setFieldValue: (field: string, value: any) => void,
-    fieldName: string,
+    fieldName: keyof FormValues,
     setUploading: (loading: boolean) => void
   ) => {
     setUploading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 500)); 
     setFieldValue(fieldName, file);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreview(reader.result as string);
@@ -67,38 +84,40 @@ const AddUserForm = () => {
     reader.readAsDataURL(file);
   };
 
-  const createCribAccount = async (
-    nic: string,
-    fullname: string,
-    phoneNumber: string,
-    dateOfBirth: string,
-    email: string,
-  ) => {
+  const createCribAccount = async (values: FormValues): Promise<string | null> => {
     if (!mnemonic || !token) {
       toast.error("Authentication required. Please login.");
-      return;
+      return null;
+    }
+    if (!RPC_ENDPOINT) {
+      toast.error("RPC endpoint not configured");
+      return null;
     }
 
     try {
       const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix: "cosmos" });
       const [account] = await wallet.getAccounts();
       const walletAddress = account.address;
+      console.log("wallet",walletAddress)
 
       const registry = new Registry([
         ...defaultRegistryTypes,
         ["/crib.user.v1.MsgCreateCribAccount", MsgCreateCribAccount],
       ]);
 
-      const client = await SigningStargateClient.connectWithSigner(RPC_ENDPOINT!, wallet, { registry });
+      const client = await SigningStargateClient.connectWithSigner(RPC_ENDPOINT, wallet, { registry });
 
+      // Build message
       const msg: MsgCreateCribAccount = {
-        creator: walletAddress,
-        createdBy: username,
-        nic,
-        fullname,
-        phoneNumber,
-        dateOfBirth,
-        email,
+        creator: account.address,
+        createdBy: bankId,
+        nic: values.nic,
+        fullname: values.fullname,
+        phoneNumber: values.phoneNumber,
+        dateOfBirth: values.dateOfBirth,
+        email: values.email,
+        nicFrontCid: values.nicFrontCid?.name || "",
+        nicBackCid: values.nicBackCid?.name || "",
       };
 
       const fee = {
@@ -106,30 +125,56 @@ const AddUserForm = () => {
         gas: "200000",
       };
 
-      const result = await client.signAndBroadcast(walletAddress, [{ typeUrl: "/crib.user.v1.MsgCreateCribAccount", value: msg }], fee);
+      const msgAny = {
+        typeUrl: "/crib.user.v1.MsgCreateCribAccount",
+        value: msg,
+      };
 
-      if (result.code === 0) {
-        toast.success("Crib account created successfully!");
-        console.log("Tx result:", result);
-      } else {
-        toast.error("Transaction failed: " + result.rawLog);
-        console.error("Tx failed:", result);
-      }
-    } catch (err) {
+      toast.loading("Signing transaction...", { id: "signing" });
+      const txRaw = await client.sign(walletAddress, [msgAny], fee, "Create Crib User");
+      toast.dismiss("signing");
+
+      const signBytes = TxRaw.encode(txRaw).finish();
+      const signBytesBase64 =
+        typeof Buffer !== "undefined"
+          ? Buffer.from(signBytes).toString("base64")
+          : btoa(String.fromCharCode(...new Uint8Array(signBytes)));
+
+      return signBytesBase64;
+    } catch (err: any) {
       console.error("Error creating Crib account:", err);
-      toast.error("Something went wrong!");
+      toast.error("Failed to sign transaction: " + (err.message || "unknown"));
+      return null;
     }
   };
 
-  const handleSubmit = async (values: any, { setSubmitting, resetForm }: any) => {
-    await createCribAccount(
-      values.nic,
-      values.fullname,
-      values.phoneNumber,
-      values.dateOfBirth,
-      values.email,
-    );
+  const createCribBackend = async (txBytes: string) => {
+    if (!API_URL) return toast.error("API URL not configured");
+    try {
+      const res = await fetch(`${API_URL}bank/broadcast/create/bank/crib/account`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({ txBytes, bankName }),
+      });
 
+      if (res.ok) toast.success("CRIB account created successfully");
+      else {
+        const text = await res.text();
+        toast.error("Broadcast failed: " + (text || res.statusText));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error while broadcasting");
+    }
+  };
+
+  const handleSubmit = async (values: FormValues, { setSubmitting, resetForm }: any) => {
+    setSubmitting(true);
+    const txBytes = await createCribAccount(values);
+    if (txBytes) await createCribBackend(txBytes);
     resetForm();
     setNicFrontPreview(null);
     setNicBackPreview(null);
@@ -137,10 +182,10 @@ const AddUserForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-50">
+      <div className="text-3xl font-bold text-main mb-2">Add New User</div>
       <div className="w-full bg-white rounded-2xl shadow-xl p-8 max-w-4xl">
-        <h2 className="text-2xl font-semibold text-center text-main mb-6">Add New User</h2>
-
+        {/* <h2 className="text-2xl font-semibold text-center text-main mb-6">Add New User</h2> */}
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
           {({ setFieldValue, isSubmitting }) => (
             <Form className="space-y-6">
@@ -186,7 +231,7 @@ const AddUserForm = () => {
 
 export default AddUserForm;
 
-// Reusable Input
+/* ---------------- Reusable Input ---------------- */
 interface FormInputProps {
   name: string;
   label: string;
@@ -205,7 +250,7 @@ const FormInput: React.FC<FormInputProps> = ({ name, label, icon, placeholder, t
   </div>
 );
 
-// Upload Card
+/* ---------------- Upload Card ---------------- */
 interface UploadCardProps {
   label: string;
   uploading: boolean;

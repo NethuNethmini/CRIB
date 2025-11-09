@@ -29,7 +29,12 @@ export interface QueryGetCreditFacilityRequest {
 
 /** QueryGetCreditFacilityResponse defines the QueryGetCreditFacilityResponse message. */
 export interface QueryGetCreditFacilityResponse {
+  status: string;
+  code: number;
+  message: string;
   creditFacility: CreditFacility | undefined;
+  requestId: string;
+  timestamp: string;
 }
 
 /** QueryAllCreditFacilityRequest defines the QueryAllCreditFacilityRequest message. */
@@ -50,7 +55,12 @@ export interface QueryListCreditFacilityByNicRequest {
 
 /** QueryListCreditFacilityByNicResponse defines the QueryListCreditFacilityByNicResponse message. */
 export interface QueryListCreditFacilityByNicResponse {
+  status: string;
+  code: number;
+  message: string;
   creditFacility: CreditFacility[];
+  requestId: string;
+  timestamp: string;
 }
 
 /** QueryCribReportRequest defines the QueryCribReportRequest message. */
@@ -58,9 +68,24 @@ export interface QueryCribReportRequest {
   nic: string;
 }
 
-/** QueryCribReportResponse defines the QueryCribReportResponse message. */
-export interface QueryCribReportResponse {
+export interface CribAccount {
   nic: string;
+  cribId: string;
+  fullName: string;
+  dateOfBirth: string;
+  isActive: boolean;
+  phoneNumber: string;
+  email: string;
+  nicFrontCid: string;
+  nicBackCid: string;
+  createdBy: string;
+  createdAt: string;
+  creator: string;
+}
+
+/** QueryCribReportResponse defines the QueryCribReportResponse message. */
+export interface CribReport {
+  cribAccountDetails: CribAccount | undefined;
   creditFacilities: CreditFacility[];
   totalFacilities: number;
   activeFacilities: number;
@@ -72,6 +97,15 @@ export interface QueryCribReportResponse {
   missedPayments: number;
   onTimePaymentRatio: number;
   creditScore: number;
+}
+
+export interface QueryCribReportResponse {
+  status: string;
+  code: number;
+  message: string;
+  cribReport: CribReport | undefined;
+  requestId: string;
+  timestamp: string;
 }
 
 function createBaseQueryParamsRequest(): QueryParamsRequest {
@@ -238,13 +272,28 @@ export const QueryGetCreditFacilityRequest: MessageFns<QueryGetCreditFacilityReq
 };
 
 function createBaseQueryGetCreditFacilityResponse(): QueryGetCreditFacilityResponse {
-  return { creditFacility: undefined };
+  return { status: "", code: 0, message: "", creditFacility: undefined, requestId: "", timestamp: "" };
 }
 
 export const QueryGetCreditFacilityResponse: MessageFns<QueryGetCreditFacilityResponse> = {
   encode(message: QueryGetCreditFacilityResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== "") {
+      writer.uint32(10).string(message.status);
+    }
+    if (message.code !== 0) {
+      writer.uint32(16).int32(message.code);
+    }
+    if (message.message !== "") {
+      writer.uint32(26).string(message.message);
+    }
     if (message.creditFacility !== undefined) {
-      CreditFacility.encode(message.creditFacility, writer.uint32(10).fork()).join();
+      CreditFacility.encode(message.creditFacility, writer.uint32(34).fork()).join();
+    }
+    if (message.requestId !== "") {
+      writer.uint32(42).string(message.requestId);
+    }
+    if (message.timestamp !== "") {
+      writer.uint32(50).string(message.timestamp);
     }
     return writer;
   },
@@ -261,7 +310,47 @@ export const QueryGetCreditFacilityResponse: MessageFns<QueryGetCreditFacilityRe
             break;
           }
 
+          message.status = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.code = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
           message.creditFacility = CreditFacility.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.timestamp = reader.string();
           continue;
         }
       }
@@ -275,14 +364,34 @@ export const QueryGetCreditFacilityResponse: MessageFns<QueryGetCreditFacilityRe
 
   fromJSON(object: any): QueryGetCreditFacilityResponse {
     return {
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      code: isSet(object.code) ? globalThis.Number(object.code) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
       creditFacility: isSet(object.creditFacility) ? CreditFacility.fromJSON(object.creditFacility) : undefined,
+      requestId: isSet(object.requestId) ? globalThis.String(object.requestId) : "",
+      timestamp: isSet(object.timestamp) ? globalThis.String(object.timestamp) : "",
     };
   },
 
   toJSON(message: QueryGetCreditFacilityResponse): unknown {
     const obj: any = {};
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.code !== 0) {
+      obj.code = Math.round(message.code);
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
     if (message.creditFacility !== undefined) {
       obj.creditFacility = CreditFacility.toJSON(message.creditFacility);
+    }
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    if (message.timestamp !== "") {
+      obj.timestamp = message.timestamp;
     }
     return obj;
   },
@@ -294,9 +403,14 @@ export const QueryGetCreditFacilityResponse: MessageFns<QueryGetCreditFacilityRe
     object: I,
   ): QueryGetCreditFacilityResponse {
     const message = createBaseQueryGetCreditFacilityResponse();
+    message.status = object.status ?? "";
+    message.code = object.code ?? 0;
+    message.message = object.message ?? "";
     message.creditFacility = (object.creditFacility !== undefined && object.creditFacility !== null)
       ? CreditFacility.fromPartial(object.creditFacility)
       : undefined;
+    message.requestId = object.requestId ?? "";
+    message.timestamp = object.timestamp ?? "";
     return message;
   },
 };
@@ -508,13 +622,28 @@ export const QueryListCreditFacilityByNicRequest: MessageFns<QueryListCreditFaci
 };
 
 function createBaseQueryListCreditFacilityByNicResponse(): QueryListCreditFacilityByNicResponse {
-  return { creditFacility: [] };
+  return { status: "", code: 0, message: "", creditFacility: [], requestId: "", timestamp: "" };
 }
 
 export const QueryListCreditFacilityByNicResponse: MessageFns<QueryListCreditFacilityByNicResponse> = {
   encode(message: QueryListCreditFacilityByNicResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== "") {
+      writer.uint32(10).string(message.status);
+    }
+    if (message.code !== 0) {
+      writer.uint32(16).int32(message.code);
+    }
+    if (message.message !== "") {
+      writer.uint32(26).string(message.message);
+    }
     for (const v of message.creditFacility) {
-      CreditFacility.encode(v!, writer.uint32(10).fork()).join();
+      CreditFacility.encode(v!, writer.uint32(34).fork()).join();
+    }
+    if (message.requestId !== "") {
+      writer.uint32(42).string(message.requestId);
+    }
+    if (message.timestamp !== "") {
+      writer.uint32(50).string(message.timestamp);
     }
     return writer;
   },
@@ -531,7 +660,47 @@ export const QueryListCreditFacilityByNicResponse: MessageFns<QueryListCreditFac
             break;
           }
 
+          message.status = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.code = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
           message.creditFacility.push(CreditFacility.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.timestamp = reader.string();
           continue;
         }
       }
@@ -545,16 +714,36 @@ export const QueryListCreditFacilityByNicResponse: MessageFns<QueryListCreditFac
 
   fromJSON(object: any): QueryListCreditFacilityByNicResponse {
     return {
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      code: isSet(object.code) ? globalThis.Number(object.code) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
       creditFacility: globalThis.Array.isArray(object?.creditFacility)
         ? object.creditFacility.map((e: any) => CreditFacility.fromJSON(e))
         : [],
+      requestId: isSet(object.requestId) ? globalThis.String(object.requestId) : "",
+      timestamp: isSet(object.timestamp) ? globalThis.String(object.timestamp) : "",
     };
   },
 
   toJSON(message: QueryListCreditFacilityByNicResponse): unknown {
     const obj: any = {};
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.code !== 0) {
+      obj.code = Math.round(message.code);
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
     if (message.creditFacility?.length) {
       obj.creditFacility = message.creditFacility.map((e) => CreditFacility.toJSON(e));
+    }
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    if (message.timestamp !== "") {
+      obj.timestamp = message.timestamp;
     }
     return obj;
   },
@@ -568,7 +757,12 @@ export const QueryListCreditFacilityByNicResponse: MessageFns<QueryListCreditFac
     object: I,
   ): QueryListCreditFacilityByNicResponse {
     const message = createBaseQueryListCreditFacilityByNicResponse();
+    message.status = object.status ?? "";
+    message.code = object.code ?? 0;
+    message.message = object.message ?? "";
     message.creditFacility = object.creditFacility?.map((e) => CreditFacility.fromPartial(e)) || [];
+    message.requestId = object.requestId ?? "";
+    message.timestamp = object.timestamp ?? "";
     return message;
   },
 };
@@ -631,9 +825,258 @@ export const QueryCribReportRequest: MessageFns<QueryCribReportRequest> = {
   },
 };
 
-function createBaseQueryCribReportResponse(): QueryCribReportResponse {
+function createBaseCribAccount(): CribAccount {
   return {
     nic: "",
+    cribId: "",
+    fullName: "",
+    dateOfBirth: "",
+    isActive: false,
+    phoneNumber: "",
+    email: "",
+    nicFrontCid: "",
+    nicBackCid: "",
+    createdBy: "",
+    createdAt: "",
+    creator: "",
+  };
+}
+
+export const CribAccount: MessageFns<CribAccount> = {
+  encode(message: CribAccount, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nic !== "") {
+      writer.uint32(10).string(message.nic);
+    }
+    if (message.cribId !== "") {
+      writer.uint32(18).string(message.cribId);
+    }
+    if (message.fullName !== "") {
+      writer.uint32(26).string(message.fullName);
+    }
+    if (message.dateOfBirth !== "") {
+      writer.uint32(34).string(message.dateOfBirth);
+    }
+    if (message.isActive !== false) {
+      writer.uint32(40).bool(message.isActive);
+    }
+    if (message.phoneNumber !== "") {
+      writer.uint32(50).string(message.phoneNumber);
+    }
+    if (message.email !== "") {
+      writer.uint32(58).string(message.email);
+    }
+    if (message.nicFrontCid !== "") {
+      writer.uint32(66).string(message.nicFrontCid);
+    }
+    if (message.nicBackCid !== "") {
+      writer.uint32(74).string(message.nicBackCid);
+    }
+    if (message.createdBy !== "") {
+      writer.uint32(82).string(message.createdBy);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(90).string(message.createdAt);
+    }
+    if (message.creator !== "") {
+      writer.uint32(98).string(message.creator);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CribAccount {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCribAccount();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.nic = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.cribId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.fullName = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.dateOfBirth = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.isActive = reader.bool();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.phoneNumber = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.nicFrontCid = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.nicBackCid = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.createdBy = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.creator = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CribAccount {
+    return {
+      nic: isSet(object.nic) ? globalThis.String(object.nic) : "",
+      cribId: isSet(object.cribId) ? globalThis.String(object.cribId) : "",
+      fullName: isSet(object.fullName) ? globalThis.String(object.fullName) : "",
+      dateOfBirth: isSet(object.dateOfBirth) ? globalThis.String(object.dateOfBirth) : "",
+      isActive: isSet(object.isActive) ? globalThis.Boolean(object.isActive) : false,
+      phoneNumber: isSet(object.phoneNumber) ? globalThis.String(object.phoneNumber) : "",
+      email: isSet(object.email) ? globalThis.String(object.email) : "",
+      nicFrontCid: isSet(object.nicFrontCid) ? globalThis.String(object.nicFrontCid) : "",
+      nicBackCid: isSet(object.nicBackCid) ? globalThis.String(object.nicBackCid) : "",
+      createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
+      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
+      creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
+    };
+  },
+
+  toJSON(message: CribAccount): unknown {
+    const obj: any = {};
+    if (message.nic !== "") {
+      obj.nic = message.nic;
+    }
+    if (message.cribId !== "") {
+      obj.cribId = message.cribId;
+    }
+    if (message.fullName !== "") {
+      obj.fullName = message.fullName;
+    }
+    if (message.dateOfBirth !== "") {
+      obj.dateOfBirth = message.dateOfBirth;
+    }
+    if (message.isActive !== false) {
+      obj.isActive = message.isActive;
+    }
+    if (message.phoneNumber !== "") {
+      obj.phoneNumber = message.phoneNumber;
+    }
+    if (message.email !== "") {
+      obj.email = message.email;
+    }
+    if (message.nicFrontCid !== "") {
+      obj.nicFrontCid = message.nicFrontCid;
+    }
+    if (message.nicBackCid !== "") {
+      obj.nicBackCid = message.nicBackCid;
+    }
+    if (message.createdBy !== "") {
+      obj.createdBy = message.createdBy;
+    }
+    if (message.createdAt !== "") {
+      obj.createdAt = message.createdAt;
+    }
+    if (message.creator !== "") {
+      obj.creator = message.creator;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CribAccount>, I>>(base?: I): CribAccount {
+    return CribAccount.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CribAccount>, I>>(object: I): CribAccount {
+    const message = createBaseCribAccount();
+    message.nic = object.nic ?? "";
+    message.cribId = object.cribId ?? "";
+    message.fullName = object.fullName ?? "";
+    message.dateOfBirth = object.dateOfBirth ?? "";
+    message.isActive = object.isActive ?? false;
+    message.phoneNumber = object.phoneNumber ?? "";
+    message.email = object.email ?? "";
+    message.nicFrontCid = object.nicFrontCid ?? "";
+    message.nicBackCid = object.nicBackCid ?? "";
+    message.createdBy = object.createdBy ?? "";
+    message.createdAt = object.createdAt ?? "";
+    message.creator = object.creator ?? "";
+    return message;
+  },
+};
+
+function createBaseCribReport(): CribReport {
+  return {
+    cribAccountDetails: undefined,
     creditFacilities: [],
     totalFacilities: 0,
     activeFacilities: 0,
@@ -648,10 +1091,10 @@ function createBaseQueryCribReportResponse(): QueryCribReportResponse {
   };
 }
 
-export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
-  encode(message: QueryCribReportResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.nic !== "") {
-      writer.uint32(10).string(message.nic);
+export const CribReport: MessageFns<CribReport> = {
+  encode(message: CribReport, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cribAccountDetails !== undefined) {
+      CribAccount.encode(message.cribAccountDetails, writer.uint32(10).fork()).join();
     }
     for (const v of message.creditFacilities) {
       CreditFacility.encode(v!, writer.uint32(18).fork()).join();
@@ -689,10 +1132,10 @@ export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryCribReportResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): CribReport {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryCribReportResponse();
+    const message = createBaseCribReport();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -701,7 +1144,7 @@ export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
             break;
           }
 
-          message.nic = reader.string();
+          message.cribAccountDetails = CribAccount.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
@@ -801,9 +1244,11 @@ export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
     return message;
   },
 
-  fromJSON(object: any): QueryCribReportResponse {
+  fromJSON(object: any): CribReport {
     return {
-      nic: isSet(object.nic) ? globalThis.String(object.nic) : "",
+      cribAccountDetails: isSet(object.cribAccountDetails)
+        ? CribAccount.fromJSON(object.cribAccountDetails)
+        : undefined,
       creditFacilities: globalThis.Array.isArray(object?.creditFacilities)
         ? object.creditFacilities.map((e: any) => CreditFacility.fromJSON(e))
         : [],
@@ -820,10 +1265,10 @@ export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
     };
   },
 
-  toJSON(message: QueryCribReportResponse): unknown {
+  toJSON(message: CribReport): unknown {
     const obj: any = {};
-    if (message.nic !== "") {
-      obj.nic = message.nic;
+    if (message.cribAccountDetails !== undefined) {
+      obj.cribAccountDetails = CribAccount.toJSON(message.cribAccountDetails);
     }
     if (message.creditFacilities?.length) {
       obj.creditFacilities = message.creditFacilities.map((e) => CreditFacility.toJSON(e));
@@ -861,12 +1306,14 @@ export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<QueryCribReportResponse>, I>>(base?: I): QueryCribReportResponse {
-    return QueryCribReportResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<CribReport>, I>>(base?: I): CribReport {
+    return CribReport.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<QueryCribReportResponse>, I>>(object: I): QueryCribReportResponse {
-    const message = createBaseQueryCribReportResponse();
-    message.nic = object.nic ?? "";
+  fromPartial<I extends Exact<DeepPartial<CribReport>, I>>(object: I): CribReport {
+    const message = createBaseCribReport();
+    message.cribAccountDetails = (object.cribAccountDetails !== undefined && object.cribAccountDetails !== null)
+      ? CribAccount.fromPartial(object.cribAccountDetails)
+      : undefined;
     message.creditFacilities = object.creditFacilities?.map((e) => CreditFacility.fromPartial(e)) || [];
     message.totalFacilities = object.totalFacilities ?? 0;
     message.activeFacilities = object.activeFacilities ?? 0;
@@ -878,6 +1325,148 @@ export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
     message.missedPayments = object.missedPayments ?? 0;
     message.onTimePaymentRatio = object.onTimePaymentRatio ?? 0;
     message.creditScore = object.creditScore ?? 0;
+    return message;
+  },
+};
+
+function createBaseQueryCribReportResponse(): QueryCribReportResponse {
+  return { status: "", code: 0, message: "", cribReport: undefined, requestId: "", timestamp: "" };
+}
+
+export const QueryCribReportResponse: MessageFns<QueryCribReportResponse> = {
+  encode(message: QueryCribReportResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== "") {
+      writer.uint32(10).string(message.status);
+    }
+    if (message.code !== 0) {
+      writer.uint32(16).int32(message.code);
+    }
+    if (message.message !== "") {
+      writer.uint32(26).string(message.message);
+    }
+    if (message.cribReport !== undefined) {
+      CribReport.encode(message.cribReport, writer.uint32(34).fork()).join();
+    }
+    if (message.requestId !== "") {
+      writer.uint32(42).string(message.requestId);
+    }
+    if (message.timestamp !== "") {
+      writer.uint32(50).string(message.timestamp);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryCribReportResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryCribReportResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.code = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.cribReport = CribReport.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.timestamp = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCribReportResponse {
+    return {
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      code: isSet(object.code) ? globalThis.Number(object.code) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      cribReport: isSet(object.cribReport) ? CribReport.fromJSON(object.cribReport) : undefined,
+      requestId: isSet(object.requestId) ? globalThis.String(object.requestId) : "",
+      timestamp: isSet(object.timestamp) ? globalThis.String(object.timestamp) : "",
+    };
+  },
+
+  toJSON(message: QueryCribReportResponse): unknown {
+    const obj: any = {};
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.code !== 0) {
+      obj.code = Math.round(message.code);
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
+    if (message.cribReport !== undefined) {
+      obj.cribReport = CribReport.toJSON(message.cribReport);
+    }
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    if (message.timestamp !== "") {
+      obj.timestamp = message.timestamp;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryCribReportResponse>, I>>(base?: I): QueryCribReportResponse {
+    return QueryCribReportResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryCribReportResponse>, I>>(object: I): QueryCribReportResponse {
+    const message = createBaseQueryCribReportResponse();
+    message.status = object.status ?? "";
+    message.code = object.code ?? 0;
+    message.message = object.message ?? "";
+    message.cribReport = (object.cribReport !== undefined && object.cribReport !== null)
+      ? CribReport.fromPartial(object.cribReport)
+      : undefined;
+    message.requestId = object.requestId ?? "";
+    message.timestamp = object.timestamp ?? "";
     return message;
   },
 };

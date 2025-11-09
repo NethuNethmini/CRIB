@@ -207,7 +207,7 @@ const Landing: React.FC = () => {
       <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Removed the commented-out layout for a cleaner look */}
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
+          {/* <div className="border-t border-gray-800 pt-8 text-center text-sm">
             <p className="mb-2">
               © 2024 Credit Information Bureau of Sri Lanka. All Rights
               Reserved.
@@ -215,7 +215,7 @@ const Landing: React.FC = () => {
             <p className="text-xs text-gray-500">
                 Official CRIB Customer Access Portal
             </p>
-          </div>
+          </div> */}
         </div>
       </footer>
 

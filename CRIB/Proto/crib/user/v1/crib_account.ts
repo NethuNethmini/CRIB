@@ -18,6 +18,8 @@ export interface CribAccount {
   isActive: boolean;
   phoneNumber: string;
   email: string;
+  nicFrontCid: string;
+  nicBackCid: string;
   createdBy: string;
   createdAt: string;
   creator: string;
@@ -32,6 +34,8 @@ function createBaseCribAccount(): CribAccount {
     isActive: false,
     phoneNumber: "",
     email: "",
+    nicFrontCid: "",
+    nicBackCid: "",
     createdBy: "",
     createdAt: "",
     creator: "",
@@ -61,14 +65,20 @@ export const CribAccount: MessageFns<CribAccount> = {
     if (message.email !== "") {
       writer.uint32(58).string(message.email);
     }
+    if (message.nicFrontCid !== "") {
+      writer.uint32(66).string(message.nicFrontCid);
+    }
+    if (message.nicBackCid !== "") {
+      writer.uint32(74).string(message.nicBackCid);
+    }
     if (message.createdBy !== "") {
-      writer.uint32(66).string(message.createdBy);
+      writer.uint32(82).string(message.createdBy);
     }
     if (message.createdAt !== "") {
-      writer.uint32(74).string(message.createdAt);
+      writer.uint32(90).string(message.createdAt);
     }
     if (message.creator !== "") {
-      writer.uint32(82).string(message.creator);
+      writer.uint32(98).string(message.creator);
     }
     return writer;
   },
@@ -141,7 +151,7 @@ export const CribAccount: MessageFns<CribAccount> = {
             break;
           }
 
-          message.createdBy = reader.string();
+          message.nicFrontCid = reader.string();
           continue;
         }
         case 9: {
@@ -149,11 +159,27 @@ export const CribAccount: MessageFns<CribAccount> = {
             break;
           }
 
-          message.createdAt = reader.string();
+          message.nicBackCid = reader.string();
           continue;
         }
         case 10: {
           if (tag !== 82) {
+            break;
+          }
+
+          message.createdBy = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
             break;
           }
 
@@ -178,6 +204,8 @@ export const CribAccount: MessageFns<CribAccount> = {
       isActive: isSet(object.isActive) ? globalThis.Boolean(object.isActive) : false,
       phoneNumber: isSet(object.phoneNumber) ? globalThis.String(object.phoneNumber) : "",
       email: isSet(object.email) ? globalThis.String(object.email) : "",
+      nicFrontCid: isSet(object.nicFrontCid) ? globalThis.String(object.nicFrontCid) : "",
+      nicBackCid: isSet(object.nicBackCid) ? globalThis.String(object.nicBackCid) : "",
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
       createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
@@ -207,6 +235,12 @@ export const CribAccount: MessageFns<CribAccount> = {
     if (message.email !== "") {
       obj.email = message.email;
     }
+    if (message.nicFrontCid !== "") {
+      obj.nicFrontCid = message.nicFrontCid;
+    }
+    if (message.nicBackCid !== "") {
+      obj.nicBackCid = message.nicBackCid;
+    }
     if (message.createdBy !== "") {
       obj.createdBy = message.createdBy;
     }
@@ -231,6 +265,8 @@ export const CribAccount: MessageFns<CribAccount> = {
     message.isActive = object.isActive ?? false;
     message.phoneNumber = object.phoneNumber ?? "";
     message.email = object.email ?? "";
+    message.nicFrontCid = object.nicFrontCid ?? "";
+    message.nicBackCid = object.nicBackCid ?? "";
     message.createdBy = object.createdBy ?? "";
     message.createdAt = object.createdAt ?? "";
     message.creator = object.creator ?? "";

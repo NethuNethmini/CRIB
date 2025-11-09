@@ -5,11 +5,13 @@ import type {PersistConfig} from "redux-persist"
 
 import authReducer from "../Store/Slices/AuthSlice";
 import walletReducer from "../Store/Slices/WalletSlice";
+import statusReducer from "../Store/Slices/StatusSlice"
 
 // Combine reducers 
 const rootReducer = combineReducers({
   auth: authReducer,
   wallet: walletReducer,
+  status:statusReducer
 });
 
 // Define RootState type based on the rootReducer

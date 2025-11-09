@@ -33,6 +33,8 @@ export interface MsgCreateCribAccount {
   dateOfBirth: string;
   phoneNumber: string;
   email: string;
+  nicFrontCid: string;
+  nicBackCid: string;
   createdBy: string;
 }
 
@@ -186,7 +188,17 @@ export const MsgUpdateParamsResponse: MessageFns<MsgUpdateParamsResponse> = {
 };
 
 function createBaseMsgCreateCribAccount(): MsgCreateCribAccount {
-  return { creator: "", nic: "", fullname: "", dateOfBirth: "", phoneNumber: "", email: "", createdBy: "" };
+  return {
+    creator: "",
+    nic: "",
+    fullname: "",
+    dateOfBirth: "",
+    phoneNumber: "",
+    email: "",
+    nicFrontCid: "",
+    nicBackCid: "",
+    createdBy: "",
+  };
 }
 
 export const MsgCreateCribAccount: MessageFns<MsgCreateCribAccount> = {
@@ -209,8 +221,14 @@ export const MsgCreateCribAccount: MessageFns<MsgCreateCribAccount> = {
     if (message.email !== "") {
       writer.uint32(50).string(message.email);
     }
+    if (message.nicFrontCid !== "") {
+      writer.uint32(58).string(message.nicFrontCid);
+    }
+    if (message.nicBackCid !== "") {
+      writer.uint32(66).string(message.nicBackCid);
+    }
     if (message.createdBy !== "") {
-      writer.uint32(58).string(message.createdBy);
+      writer.uint32(74).string(message.createdBy);
     }
     return writer;
   },
@@ -275,6 +293,22 @@ export const MsgCreateCribAccount: MessageFns<MsgCreateCribAccount> = {
             break;
           }
 
+          message.nicFrontCid = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.nicBackCid = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
           message.createdBy = reader.string();
           continue;
         }
@@ -295,6 +329,8 @@ export const MsgCreateCribAccount: MessageFns<MsgCreateCribAccount> = {
       dateOfBirth: isSet(object.dateOfBirth) ? globalThis.String(object.dateOfBirth) : "",
       phoneNumber: isSet(object.phoneNumber) ? globalThis.String(object.phoneNumber) : "",
       email: isSet(object.email) ? globalThis.String(object.email) : "",
+      nicFrontCid: isSet(object.nicFrontCid) ? globalThis.String(object.nicFrontCid) : "",
+      nicBackCid: isSet(object.nicBackCid) ? globalThis.String(object.nicBackCid) : "",
       createdBy: isSet(object.createdBy) ? globalThis.String(object.createdBy) : "",
     };
   },
@@ -319,6 +355,12 @@ export const MsgCreateCribAccount: MessageFns<MsgCreateCribAccount> = {
     if (message.email !== "") {
       obj.email = message.email;
     }
+    if (message.nicFrontCid !== "") {
+      obj.nicFrontCid = message.nicFrontCid;
+    }
+    if (message.nicBackCid !== "") {
+      obj.nicBackCid = message.nicBackCid;
+    }
     if (message.createdBy !== "") {
       obj.createdBy = message.createdBy;
     }
@@ -336,6 +378,8 @@ export const MsgCreateCribAccount: MessageFns<MsgCreateCribAccount> = {
     message.dateOfBirth = object.dateOfBirth ?? "";
     message.phoneNumber = object.phoneNumber ?? "";
     message.email = object.email ?? "";
+    message.nicFrontCid = object.nicFrontCid ?? "";
+    message.nicBackCid = object.nicBackCid ?? "";
     message.createdBy = object.createdBy ?? "";
     return message;
   },

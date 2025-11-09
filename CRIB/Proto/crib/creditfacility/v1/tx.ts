@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { PaymentRecord } from "./credit_facility";
+import { FacilityStatus, facilityStatusFromJSON, facilityStatusToJSON, PaymentRecord } from "./credit_facility";
 import { Params } from "./params";
 
 export const protobufPackage = "crib.creditfacility.v1";
@@ -34,7 +34,7 @@ export interface MsgCreateCreditFacility {
   institution: string;
   facilityType: string;
   loanAmount: number;
-  status: string;
+  status: FacilityStatus;
   openedDate: string;
   closedDate: string;
   paymentHistory: PaymentRecord[];
@@ -55,7 +55,7 @@ export interface MsgUpdateCreditFacility {
   creator: string;
   facilityId: string;
   cribUserNic: string;
-  status: string;
+  status: FacilityStatus;
   paymentHistory: PaymentRecord[];
 }
 
@@ -198,7 +198,7 @@ function createBaseMsgCreateCreditFacility(): MsgCreateCreditFacility {
     institution: "",
     facilityType: "",
     loanAmount: 0,
-    status: "",
+    status: 0,
     openedDate: "",
     closedDate: "",
     paymentHistory: [],
@@ -225,8 +225,8 @@ export const MsgCreateCreditFacility: MessageFns<MsgCreateCreditFacility> = {
     if (message.loanAmount !== 0) {
       writer.uint32(48).uint64(message.loanAmount);
     }
-    if (message.status !== "") {
-      writer.uint32(58).string(message.status);
+    if (message.status !== 0) {
+      writer.uint32(56).int32(message.status);
     }
     if (message.openedDate !== "") {
       writer.uint32(66).string(message.openedDate);
@@ -296,11 +296,11 @@ export const MsgCreateCreditFacility: MessageFns<MsgCreateCreditFacility> = {
           continue;
         }
         case 7: {
-          if (tag !== 58) {
+          if (tag !== 56) {
             break;
           }
 
-          message.status = reader.string();
+          message.status = reader.int32() as any;
           continue;
         }
         case 8: {
@@ -344,7 +344,7 @@ export const MsgCreateCreditFacility: MessageFns<MsgCreateCreditFacility> = {
       institution: isSet(object.institution) ? globalThis.String(object.institution) : "",
       facilityType: isSet(object.facilityType) ? globalThis.String(object.facilityType) : "",
       loanAmount: isSet(object.loanAmount) ? globalThis.Number(object.loanAmount) : 0,
-      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      status: isSet(object.status) ? facilityStatusFromJSON(object.status) : 0,
       openedDate: isSet(object.openedDate) ? globalThis.String(object.openedDate) : "",
       closedDate: isSet(object.closedDate) ? globalThis.String(object.closedDate) : "",
       paymentHistory: globalThis.Array.isArray(object?.paymentHistory)
@@ -373,8 +373,8 @@ export const MsgCreateCreditFacility: MessageFns<MsgCreateCreditFacility> = {
     if (message.loanAmount !== 0) {
       obj.loanAmount = Math.round(message.loanAmount);
     }
-    if (message.status !== "") {
-      obj.status = message.status;
+    if (message.status !== 0) {
+      obj.status = facilityStatusToJSON(message.status);
     }
     if (message.openedDate !== "") {
       obj.openedDate = message.openedDate;
@@ -399,7 +399,7 @@ export const MsgCreateCreditFacility: MessageFns<MsgCreateCreditFacility> = {
     message.institution = object.institution ?? "";
     message.facilityType = object.facilityType ?? "";
     message.loanAmount = object.loanAmount ?? 0;
-    message.status = object.status ?? "";
+    message.status = object.status ?? 0;
     message.openedDate = object.openedDate ?? "";
     message.closedDate = object.closedDate ?? "";
     message.paymentHistory = object.paymentHistory?.map((e) => PaymentRecord.fromPartial(e)) || [];
@@ -550,7 +550,7 @@ export const MsgCreateCreditFacilityResponse: MessageFns<MsgCreateCreditFacility
 };
 
 function createBaseMsgUpdateCreditFacility(): MsgUpdateCreditFacility {
-  return { creator: "", facilityId: "", cribUserNic: "", status: "", paymentHistory: [] };
+  return { creator: "", facilityId: "", cribUserNic: "", status: 0, paymentHistory: [] };
 }
 
 export const MsgUpdateCreditFacility: MessageFns<MsgUpdateCreditFacility> = {
@@ -564,8 +564,8 @@ export const MsgUpdateCreditFacility: MessageFns<MsgUpdateCreditFacility> = {
     if (message.cribUserNic !== "") {
       writer.uint32(26).string(message.cribUserNic);
     }
-    if (message.status !== "") {
-      writer.uint32(34).string(message.status);
+    if (message.status !== 0) {
+      writer.uint32(32).int32(message.status);
     }
     for (const v of message.paymentHistory) {
       PaymentRecord.encode(v!, writer.uint32(42).fork()).join();
@@ -605,11 +605,11 @@ export const MsgUpdateCreditFacility: MessageFns<MsgUpdateCreditFacility> = {
           continue;
         }
         case 4: {
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.status = reader.string();
+          message.status = reader.int32() as any;
           continue;
         }
         case 5: {
@@ -634,7 +634,7 @@ export const MsgUpdateCreditFacility: MessageFns<MsgUpdateCreditFacility> = {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
       facilityId: isSet(object.facilityId) ? globalThis.String(object.facilityId) : "",
       cribUserNic: isSet(object.cribUserNic) ? globalThis.String(object.cribUserNic) : "",
-      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      status: isSet(object.status) ? facilityStatusFromJSON(object.status) : 0,
       paymentHistory: globalThis.Array.isArray(object?.paymentHistory)
         ? object.paymentHistory.map((e: any) => PaymentRecord.fromJSON(e))
         : [],
@@ -652,8 +652,8 @@ export const MsgUpdateCreditFacility: MessageFns<MsgUpdateCreditFacility> = {
     if (message.cribUserNic !== "") {
       obj.cribUserNic = message.cribUserNic;
     }
-    if (message.status !== "") {
-      obj.status = message.status;
+    if (message.status !== 0) {
+      obj.status = facilityStatusToJSON(message.status);
     }
     if (message.paymentHistory?.length) {
       obj.paymentHistory = message.paymentHistory.map((e) => PaymentRecord.toJSON(e));
@@ -669,7 +669,7 @@ export const MsgUpdateCreditFacility: MessageFns<MsgUpdateCreditFacility> = {
     message.creator = object.creator ?? "";
     message.facilityId = object.facilityId ?? "";
     message.cribUserNic = object.cribUserNic ?? "";
-    message.status = object.status ?? "";
+    message.status = object.status ?? 0;
     message.paymentHistory = object.paymentHistory?.map((e) => PaymentRecord.fromPartial(e)) || [];
     return message;
   },
