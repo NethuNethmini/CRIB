@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Header from "../Components/Header/header";
-import Sidebar from "../Components/Sidebar/sidebar"; 
+import Sidebar from "../Components/Sidebar/Sidebars"; 
 
 const BankLayout = () => {
   return (
