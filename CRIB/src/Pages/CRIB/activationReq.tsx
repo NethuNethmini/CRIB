@@ -31,7 +31,8 @@ const RPC_ENDPOINT: string = import.meta.env.VITE_RPC_ENDPOINT;
 
 export default function ActivationReq() {
   const token = useAppSelector((state) => state.auth.auth);
-  const mnemonic = useAppSelector((state) => state.wallet.mnemonic.mnemonic);
+  const mnemonic = useAppSelector((state) => state.auth.mnemonic) || "";
+  console.log("Mnemonic", mnemonic)
 
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -106,7 +107,7 @@ export default function ActivationReq() {
       const signBytes = TxRaw.encode(txRaw).finish();
       const signBytesBase64 = Buffer.from(signBytes).toString("base64");
 
-      // toast.loading("Broadcasting transaction...", { id: "broadcast" });
+      
       const result = await fetch(`${apiUrl}bank/broadcast/user`, {
         method: "POST",
         headers: {
