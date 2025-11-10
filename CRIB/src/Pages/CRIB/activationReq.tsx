@@ -72,7 +72,7 @@ export default function ActivationReq() {
       setRequests(mapped);
     } catch (err: any) {
       setError(err.message);
-      toast.error("Failed to load requests");
+      console.log("Failed to load requests");
     } finally {
       setLoading(false);
     }

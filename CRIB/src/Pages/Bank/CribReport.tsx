@@ -232,7 +232,7 @@ const CribReportViewer: React.FC = () => {
             <div className="flex-1 flex flex-col overflow-hidden max-w-5xl">
                 <main className="flex-1 space-y-8">
                     <div className="text-center">
-                        <h1 className="text-3xl font-bold text-blue-600 mb-2">CRIB Report Viewer</h1>
+                        <h1 className="text-3xl font-bold text-black mb-2">CRIB Report Viewer</h1>
                         <p className="text-gray-600">Enter user details to retrieve credit report</p>
                     </div>
 
@@ -285,7 +285,7 @@ const CribReportViewer: React.FC = () => {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    className="px-8 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    className="px-8 py-2 bg-main text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
                                     {loading ? (
                                         <>

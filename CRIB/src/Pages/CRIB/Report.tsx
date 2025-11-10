@@ -21,7 +21,7 @@ export default function ReportApproval() {
   const [requests, setRequests] = useState<ReportRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [processingIds] = useState<Set<string>>(new Set());
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set()); // ✅ fixed line
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -54,7 +54,6 @@ export default function ReportApproval() {
 
         const result = await res.json();
         const data = Array.isArray(result.rows) ? result.rows : [];
-
         setRequests(data);
       } catch (err) {
         const errorMessage =
@@ -71,7 +70,7 @@ export default function ReportApproval() {
     }
   }, [token]);
 
-  // Approve
+  // Approve request
   const handleApprove = async (values: { requestId: string; nic: string }) => {
     const { requestId, nic } = values;
     setProcessingIds((prev) => new Set(prev).add(requestId));
@@ -83,7 +82,10 @@ export default function ReportApproval() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ requestId, nic }),
+        body: JSON.stringify({
+          requestId: String(requestId),
+          nic: String(nic),
+        }),
       });
 
       if (!res.ok) {
@@ -95,7 +97,7 @@ export default function ReportApproval() {
       console.log("Approval success:", result);
       toast.success("Report approved successfully!");
 
-      // Update the local state to mark as approved
+      // Update local state
       setRequests((prev) =>
         prev.map((req) =>
           req.id === requestId ? { ...req, status: true } : req
@@ -115,11 +117,10 @@ export default function ReportApproval() {
     }
   };
 
-  // Navigate to generate report with request data
+  // Navigate to generate report page
   const handleGenerateReport = (request: ReportRequest) => {
     setRequests((prev) => prev.filter((r) => r.id !== request.id));
 
-    // Navigate to generate report page
     navigate("/generate-report", {
       state: {
         requestId: request.id,
@@ -129,13 +130,13 @@ export default function ReportApproval() {
     });
   };
 
+  // Search & Pagination
   const filteredRequests = requests.filter(
     (req) =>
       req.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       req.nic.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -155,9 +156,7 @@ export default function ReportApproval() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Report Requests</h1>
-          <p className="text-gray-600">
-            Approve Requests & Generate Reports
-          </p>
+          <p className="text-gray-600">Approve Requests & Generate Reports</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -197,7 +196,7 @@ export default function ReportApproval() {
           ) : (
             <div className="overflow-x-auto">
               <div className="flex flex-col">
-                {/* Header Row */}
+                {/* Header */}
                 <div className="flex bg-gray-50 border-b border-gray-100 text-xs font-semibold uppercase text-gray-600">
                   <div className="w-1/12 px-6 py-4">#</div>
                   <div className="w-3/12 px-6 py-4">Email</div>
@@ -206,7 +205,7 @@ export default function ReportApproval() {
                   <div className="w-3/12 px-6 py-4 text-center">Actions</div>
                 </div>
 
-                {/* Data Rows */}
+                {/* Rows */}
                 {currentItems.map((req, index) => {
                   const isProcessing = processingIds.has(req.id);
                   const isApproved = req.status === true;
@@ -245,32 +244,26 @@ export default function ReportApproval() {
                       </div>
                       <div className="w-3/12 px-6 py-4 flex justify-center gap-2">
                         {isPending ? (
-                          <>
-                            <button
-                              disabled={isProcessing}
-                              onClick={() =>
-                                handleApprove({
-                                  requestId: req.id,
-                                  nic: req.nic,
-                                })
-                              }
-                              className="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              {isProcessing ? "Processing..." : "Approve"}
-                            </button>
-                          </>
+                          <button
+                            disabled={isProcessing}
+                            onClick={() =>
+                              handleApprove({
+                                requestId: req.id,
+                                nic: req.nic,
+                              })
+                            }
+                            className="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {isProcessing ? "Processing..." : "Approve"}
+                          </button>
                         ) : (
-                          <span className="text-gray-400 text-sm">
-                            {!isPending && (
-                              <button
-                                disabled={isProcessing}
-                                onClick={() => handleGenerateReport(req)}
-                                className="px-4 py-2 bg-main text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              >
-                                Generate Report
-                              </button>
-                            )}
-                          </span>
+                          <button
+                            disabled={isProcessing}
+                            onClick={() => handleGenerateReport(req)}
+                            className="px-4 py-2 bg-main text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Generate Report
+                          </button>
                         )}
                       </div>
                     </div>
