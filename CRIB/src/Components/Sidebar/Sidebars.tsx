@@ -64,7 +64,7 @@ export default function Sidebar() {
           icon={<LogOut size={18} />}
           label="Log Out"
           active={false}
-          onClick={() => handleItemClick("", "Log Out")}
+          onClick={() => handleItemClick("/", "Log Out")}
         />
       </div>
     </div>

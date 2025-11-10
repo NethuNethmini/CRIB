@@ -199,7 +199,7 @@ export default function Facilities() {
       if (result.code === 0) {
         toast.success("Blockchain transaction successful! Tx Hash: " + result.transactionHash);
 
-        // Get signed tx bytes to send to backend
+        
         const signedTx = await client.sign(
           account.address, 
           [msgAny], 
@@ -207,7 +207,7 @@ export default function Facilities() {
           "Create Credit Facility"
         );
 
-        // Convert signed tx to raw bytes
+      
         const txBytes = TxRaw.encode(signedTx).finish();
 
         if (bankName) {

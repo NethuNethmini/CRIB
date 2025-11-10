@@ -18,7 +18,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowed, children }) =>
   if (!auth) {
     return (
       <Navigate
-        to={role === "crib" ? "/login-crib" : "/login-bank"}
+        to={role === "crib" ? "/login-crib" : "/"}
         state={{ from: location }}
         replace
       />

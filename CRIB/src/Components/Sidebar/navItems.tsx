@@ -29,7 +29,7 @@ export const navItems: NavItem[] = [
     roles: ["bank"], 
   },
    {
-    label: "  Facilities",
+    label: "Facilities",
     icon: <Users2 size={18} />,
     path: "/facilities",
     roles: ["bank"], 
