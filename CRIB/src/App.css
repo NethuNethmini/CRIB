@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@theme {
+  --color-main: #036AA2;
+  --color-secondary: #000000;
+}
+
+.bg-gradient-to-br {
+    --tw-gradient-position: to bottom right in oklab;
+    background-image: linear-gradient(var(--tw-gradient-stops));
+}
