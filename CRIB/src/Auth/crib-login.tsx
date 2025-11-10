@@ -9,7 +9,6 @@ import "aos/dist/aos.css";
 import { Buffer } from "buffer";
 import { setAuthData } from "../Store/Slices/AuthSlice";
 import { useDispatch } from "react-redux";
-import { setWalletAddress } from "../Store/Slices/WalletSlice";
 import toast from "react-hot-toast";
 
 window.Buffer = Buffer;
@@ -33,7 +32,6 @@ const CRIBLogin: React.FC = () => {
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const apiUrl: string = import.meta.env.VITE_API_URL;
- 
 
   const validationSchema = Yup.object().shape({
     userName: Yup.string().required("User Name is required"),
@@ -46,78 +44,81 @@ const CRIBLogin: React.FC = () => {
     AOS.init({ duration: 1000, once: true, easing: "ease-out-cubic" });
   }, []);
 
-  
-
   //  CRIB login
   const bankLogin = async (values: LoginFormValues): Promise<void> => {
-  try {
-    const res = await fetch(`${apiUrl}crib/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...values,
-      }),
-    });
+    try {
+      const res = await fetch(`${apiUrl}crib/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
 
-    if (!res.ok) {
-      console.log("Login Failed");
-      toast.error("Login Failed")
-      return;
-    }
-
-    const data = await res.json();
-    console.log("Login Successful:", data);
-    toast.success("Login Successful")
-
-    // Save auth data 
-    dispatch(
-      setAuthData({
-        auth: data.token,
-        refresh: data.refreshToken,
-        role: data.role || "crib",
-        bankName: data.bankName,
-        bankId: data.bankId,
-        username: data.username,
-        mnemonic: data.mnemonic,
-      })
-    );
-
-    // bank API call 
-    const hardcodedBankPayload = {
-      bankName: "BOC6",
-      password:"Asdf123###"
-    };
-
-    const bankRes = await fetch(`${apiUrl}bank/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${data.token}`, 
-      },
-      body: JSON.stringify(hardcodedBankPayload),
-    });
-
-    if (bankRes.ok) {
-      const bankData = await bankRes.json();
-      console.log("Bank API success:", bankData);
-
-      dispatch(setWalletAddress(bankData.mnemonic))
-
-      //save mnemonic to wallet slice 
-      if(bankData?.mnemonic){
-      dispatch(setWalletAddress({ address:bankData, mnemonic:bankData }));
+      if (!res.ok) {
+        toast.error("Login failed. Please check your credentials.");
+        return;
       }
-    } else {
-      console.warn("Bank API failed");
+
+      const data = await res.json();
+      toast.success("Login Successful!");
+
+      // Save CRIB auth data
+      dispatch(
+        setAuthData({
+          auth: data.token,
+          refresh: data.refreshToken,
+          role: data.role || "crib",
+          bankName: data.bankName,
+          bankId: data.bankId,
+          username: data.username,
+        })
+      );
+
+      // Perform bank login after CRIB login
+      const hardcodedBankPayload = {
+        bankName: "BOC6",
+        password: "Asdf123###",
+      };
+
+      const bankRes = await fetch(`${apiUrl}bank/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.token}`,
+        },
+        body: JSON.stringify(hardcodedBankPayload),
+      });
+
+      if (bankRes.ok) {
+        const bankData = await bankRes.json();
+        console.log("Bank API Success:", bankData);
+
+        // Save only mnemonic from bank API
+         if (bankData?.mnemonic) {
+          dispatch(
+            setAuthData({
+              auth: data.token,
+              refresh: data.refreshToken,
+              role: data.role || "crib",
+              bankName: data.bankName,
+              bankId: data.bankId,
+              username: data.username,
+              mnemonic: bankData.mnemonic,
+            })
+          );
+
+          console.log("BANK API MNEMONIC", bankData.mnemonic);
+        }
+      } else {
+        console.warn("Bank API failed");
+      }
+
+      // Navigate after successful login
+      navigate("/crib-requests");
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      toast.error("An error occurred during login");
     }
-
-    // Navigate after both succeed
-    navigate("/crib-requests");
-  } catch (error: any) {
-    console.error("Login Error:", error);
-  }
-};
-
+  };
 
   // Handle submit
   const handleSubmit = async (values: typeof initialValues) => {
@@ -137,9 +138,7 @@ const CRIBLogin: React.FC = () => {
           data-aos="zoom-in"
         >
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Employee Sign In
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900">Employee Sign In</h2>
             <p className="text-gray-600 text-sm mt-1">
               Enter your credentials to access the portal
             </p>
@@ -164,14 +163,14 @@ const CRIBLogin: React.FC = () => {
                     <Field
                       type="text"
                       name="userName"
-                      placeholder="Enter Bank Name"
+                      placeholder="Enter User Name"
                       className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
                   <ErrorMessage
                     name="userName"
                     component="p"
-                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-xs mt-1"
                   />
                 </div>
 
@@ -205,7 +204,7 @@ const CRIBLogin: React.FC = () => {
                   <ErrorMessage
                     name="password"
                     component="p"
-                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-xs mt-1"
                   />
                 </div>
 

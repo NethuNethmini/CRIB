@@ -171,7 +171,7 @@ export default function GenerateReport() {
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ values, isSubmitting, resetForm }) => (
+          {({ values, isSubmitting }) => (
             <Form className="space-y-6">
               {/* Hidden Request ID Field */}
               <Field type="hidden" name="requestId" />
