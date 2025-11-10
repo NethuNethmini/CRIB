@@ -11,6 +11,6 @@ export const cribRoutes = [
   {path:"/crib-register", element:<CRIBRegister/>},
   {path:"/crib-login" , element:<CRIBLogin/>},
  {path:"/accounts" ,element:<AccountsTable/>},
- {path:"/reports" , element:<ReportApproval/>}
+  { path: "/reports", element: <ReportApproval /> }
 
 ];
