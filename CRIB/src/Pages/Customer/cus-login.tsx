@@ -58,7 +58,7 @@ const CustomerLogin: React.FC = () => {
       const nicFrontBase64 = values.nicFront ? await fileToBase64(values.nicFront) : "";
       const nicBackBase64 = values.nicBack ? await fileToBase64(values.nicBack) : "";
 
-      // Create payload matching Postman structure
+      // Create payload
       const payload = {
         userName: values.userName,
         nic: values.nic,
@@ -67,7 +67,7 @@ const CustomerLogin: React.FC = () => {
         email: values.email,
       };
 
-      // Console log for debugging (without printing full base64)
+      // Console log for debugging 
       console.log("Payload structure:", {
         userName: payload.userName,
         nic: payload.nic,
@@ -95,8 +95,6 @@ const CustomerLogin: React.FC = () => {
       console.log("Report submitted successfully:", data);
       toast.success("Report submitted successfully!");
       
-      // Optional: Navigate after successful submission
-      // navigate("/success");
     } catch (error) {
       console.error("Error submitting report:", error);
       toast.error("An error occurred while submitting report");
