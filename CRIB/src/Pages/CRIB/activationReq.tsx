@@ -106,7 +106,7 @@ export default function ActivationReq() {
       const signBytes = TxRaw.encode(txRaw).finish();
       const signBytesBase64 = Buffer.from(signBytes).toString("base64");
 
-      toast.loading("Broadcasting transaction...", { id: "broadcast" });
+      // toast.loading("Broadcasting transaction...", { id: "broadcast" });
       const result = await fetch(`${apiUrl}bank/broadcast/user`, {
         method: "POST",
         headers: {
@@ -115,7 +115,6 @@ export default function ActivationReq() {
         },
         body: JSON.stringify({ txBytes: signBytesBase64, bankName }),
       }).then((r) => r.json());
-      toast.dismiss("broadcast");
 
       if (result.status === "success") {
         toast.success("Bank user activated!");
@@ -155,7 +154,7 @@ export default function ActivationReq() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Activation Requests</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Activation Requests</h1>
           <p className="text-gray-600">Approve or reject pending bank activation requests</p>
         </div>
 
@@ -170,7 +169,7 @@ export default function ActivationReq() {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setCurrentPage(1); // reset to first page on search
+                  setCurrentPage(1); 
                 }}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
@@ -184,7 +183,7 @@ export default function ActivationReq() {
               <p className="text-gray-500">Loading requests...</p>
             </div>
           ) : error ? (
-            <div className="py-20 text-center text-red-600 font-medium">{error}</div>
+            <div className="py-20 text-center text-gray-500">No pending requests</div>
           ) : currentItems.length === 0 ? (
             <div className="py-20 text-center text-gray-500">No pending requests</div>
           ) : (

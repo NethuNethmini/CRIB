@@ -183,8 +183,8 @@ const AddUserForm: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-50">
-      <div className="text-3xl font-bold text-main mb-2">Add New User</div>
-      <div className="w-full bg-white rounded-2xl shadow-xl p-8 max-w-4xl">
+      <div className="text-3xl font-bold text-gray-900 -mt-10 text-start">Add New User</div>
+      <div className="w-full bg-white rounded-2xl shadow-xl p-8 max-w-4xl mt-6 ">
         {/* <h2 className="text-2xl font-semibold text-center text-main mb-6">Add New User</h2> */}
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
           {({ setFieldValue, isSubmitting }) => (

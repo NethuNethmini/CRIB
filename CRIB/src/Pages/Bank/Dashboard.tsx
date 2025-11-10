@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 interface RequestValues {
   bankName: string;
   bankId: string;
+  licenseNumber: string;
 }
 
 interface StatusResponse {
@@ -16,17 +17,14 @@ interface StatusResponse {
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate()
-  const [status, setStatus] = useState<string>("not_requested"); // "not_requested" | "pending" | "approved"
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<string>("not_requested");
   const apiUrl: string = import.meta.env.VITE_API_URL;
   const authData = useAppSelector((state) => state.auth);
   const bankId = useAppSelector((state) => state.auth.bankId);
   const bankName = useAppSelector((state) => state.auth.bankName);
+  const [licenseNumber, setLicenseNumber] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
-  console.log("bankId:", bankId);
-  console.log("bankName:", bankName);
-  console.log("Auth token in Redux:", authData.auth);
 
   // Add bank to CRIB network
   const addBankReq = async (values: RequestValues) => {
@@ -44,20 +42,15 @@ export default function Dashboard() {
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
         toast.error(errorData?.message || "Request Send Failed");
-        console.error("Request Send Failed:", res.status, res.statusText);
         return null;
       }
 
       const data = await res.json();
       toast.success("Request Sent Successfully");
-      console.log("Request Sent Successfully", data);
-
-      // Change status to "pending" after successful request
+      setLicenseNumber("");
       setStatus("pending");
-
       return data;
     } catch (error) {
-      console.error("Request Send Failed", error);
       toast.error("Network error occurred");
       return null;
     } finally {
@@ -67,15 +60,14 @@ export default function Dashboard() {
 
   // Check approval status
   const getStatus = async () => {
-    if (!bankId || !bankName) {
-      console.warn("Missing bankId or bankName, skipping status check");
-      return;
-    }
+    if (!bankId || !bankName) return;
 
     setLoading(true);
     try {
       const res = await fetch(
-        `${apiUrl}bank/get/status?bankId=${encodeURIComponent(bankId)}&bankName=${encodeURIComponent(bankName)}`,
+        `${apiUrl}bank/get/status?bankId=${encodeURIComponent(
+          bankId
+        )}&bankName=${encodeURIComponent(bankName)}`,
         {
           method: "GET",
           headers: {
@@ -87,28 +79,18 @@ export default function Dashboard() {
 
       if (res.ok) {
         const data: StatusResponse = await res.json();
-        console.log("Status check success:", data);
-
-        // Update status based on response
         if (data.approved) {
           setStatus("approved");
-          navigate("/abc")
+          navigate("/abc");
         } else if (data.status === "pending") {
           setStatus("pending");
         } else {
           setStatus("not_requested");
         }
       } else {
-        const errorText = await res.text().catch(() => "Unknown error");
-        console.error("API returned an error:", res.status, res.statusText, errorText);
-        
-        // If 404, it means no request was made yet
-        if (res.status === 404) {
-          setStatus("not_requested");
-        }
+        if (res.status === 404) setStatus("not_requested");
       }
     } catch (error) {
-      console.error("Network or server error:", error);
       toast.error("Failed to check approval status");
     } finally {
       setLoading(false);
@@ -116,30 +98,24 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (bankId && bankName && authData.auth) {
-      getStatus();
-    }
+    if (bankId && bankName && authData.auth) getStatus();
   }, [bankId, bankName, authData.auth]);
 
   const handleJoinClick = async () => {
     if (!bankId || !bankName) {
       toast.error("Missing bank information. Please log in again.");
-      console.error("Missing bankId or bankName in Redux");
       return;
     }
-
     if (!authData.auth) {
       toast.error("Authentication required. Please log in again.");
-      console.error("Missing auth token");
+      return;
+    }
+    if (!licenseNumber.trim()) {
+      toast.error("License Number is required");
       return;
     }
 
-    const values: RequestValues = {
-      bankName: bankName,
-      bankId: bankId,
-    };
-
-    await addBankReq(values);
+    await addBankReq({ bankName, bankId, licenseNumber });
   };
 
   return (
@@ -155,7 +131,7 @@ export default function Dashboard() {
           {/* Icon */}
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl">
+              <div className="w-20 h-20 bg-main rounded-2xl flex items-center justify-center shadow-2xl">
                 <Shield className="w-10 h-10 text-white" />
               </div>
               {status === "approved" && (
@@ -167,12 +143,23 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-4 bg-main bg-clip-text text-transparent">
             Join with CRIB
           </h1>
-          <p className="text-slate-600 mb-8 leading-relaxed">
+          <p className="text-slate-600 mb-6 leading-relaxed">
             Connect securely with CRIB to access credit information and manage your customers efficiently.
           </p>
+
+          {/* License Number Input */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Enter License Number"
+              value={licenseNumber}
+              onChange={(e) => setLicenseNumber(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+          </div>
 
           {/* Status Information */}
           {loading ? (
@@ -195,10 +182,9 @@ export default function Dashboard() {
           {status === "not_requested" ? (
             <button
               onClick={handleJoinClick}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-4 px-8 rounded-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || !licenseNumber.trim()}
+              className="w-full bg-main text-white font-semibold py-4 px-8 rounded-xl hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {loading ? (
                 <>
                   <Clock className="w-5 h-5 relative z-10 animate-spin" />
@@ -228,8 +214,6 @@ export default function Dashboard() {
               <span>Connected to CRIB</span>
             </button>
           ) : null}
-
-          
         </div>
       </div>
     </div>

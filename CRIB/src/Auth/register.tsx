@@ -213,7 +213,7 @@ const Register: React.FC = () => {
                   <ErrorMessage
                     name="bankName"
                     component="div"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
@@ -245,7 +245,7 @@ const Register: React.FC = () => {
                   <ErrorMessage
                     name="password"
                     component="div"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
 
                   <div className="mt-2 space-y-1">
@@ -305,7 +305,7 @@ const Register: React.FC = () => {
                   <ErrorMessage
                     name="confirmPassword"
                     component="div"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 

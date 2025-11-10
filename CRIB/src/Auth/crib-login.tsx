@@ -171,7 +171,7 @@ const CRIBLogin: React.FC = () => {
                   <ErrorMessage
                     name="userName"
                     component="p"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
@@ -205,7 +205,7 @@ const CRIBLogin: React.FC = () => {
                   <ErrorMessage
                     name="password"
                     component="p"
-                    className="text-red-500 text-[.7rem] absolute lg:right-30 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
+                    className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn"
                   />
                 </div>
 
