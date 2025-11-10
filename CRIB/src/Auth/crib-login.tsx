@@ -73,7 +73,7 @@ const CRIBLogin: React.FC = () => {
         })
       );
 
-      // Perform bank login after CRIB login
+      // bank login after CRIB login
       const hardcodedBankPayload = {
         bankName: "BOC6",
         password: "Asdf123###",
@@ -119,6 +119,7 @@ const CRIBLogin: React.FC = () => {
       toast.error("An error occurred during login");
     }
   };
+
 
   // Handle submit
   const handleSubmit = async (values: typeof initialValues) => {

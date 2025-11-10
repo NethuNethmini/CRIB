@@ -95,7 +95,9 @@ const Register: React.FC = () => {
 
       const [{ address }] = await wallet.getAccounts();
       console.log("Wallet Address:", address);
-     dispatch(setWalletAddress({ address, mnemonic }));
+      dispatch(setWalletAddress({ address, mnemonic }));
+
+  
 
       return { mnemonic, address };
     } catch (error) {
@@ -137,6 +139,29 @@ const Register: React.FC = () => {
     }
   };
 
+  //Faucet Transfer
+
+  const faucetTransfer = async (values:{walletAddress:string}, token:string):Promise<void> =>{
+     try{
+      const res = await fetch(`${apiUrl}bank/faucet`,{
+        method:"POST",
+        headers:{
+        "Content-Type":"application/json",
+        Authorization :`Bearer ${token}`,
+        },
+        body:JSON.stringify(values)
+
+      });
+      if(res.ok){
+        console.log("Faucet Transfer Success")
+      }else{
+        console.log("Faucet Transfer Filed")
+      }
+     } catch{
+      console.log("Faucet Transfer Failed")
+     }
+  }
+
   //Handle Form Submit
   const handleSubmit = async (values: RegisterFormValues) => {
     console.log("Form Data:", values);
@@ -163,6 +188,11 @@ const Register: React.FC = () => {
       },
       token
     );
+
+    await faucetTransfer({
+      walletAddress:bankId,
+
+    },token)
 
     // Navigate after success
     navigate("/bank-login");
