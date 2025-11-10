@@ -1,4 +1,4 @@
-import { UserCheck, UserCircle, Users2 } from "lucide-react";
+import { File, UserCheck, UserCircle, Users2 } from "lucide-react";
 import React from "react";
 
 export interface NavItem {
@@ -20,7 +20,7 @@ export const navItems: NavItem[] = [
     label:"Accounts",
     icon:<UserCircle size={18}/>,
     path:"/accounts",
-    roles:["bank","crib"]
+    roles:["bank"]
   },
   {
     label: "Users",
@@ -37,7 +37,7 @@ export const navItems: NavItem[] = [
 
    {
     label: "Reports",
-    icon: <Users2 size={18} />,
+    icon: <File size={18} />,
     path: "/reports",
     roles: ["crib"], 
   },

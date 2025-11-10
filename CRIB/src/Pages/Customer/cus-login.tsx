@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import type{FormikHelpers} from "formik"
 import * as Yup from "yup";
 import { Mail, User, IdCard, Upload, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import Logo from "../../Components/Logo/logo";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -42,23 +42,23 @@ const CustomerLogin: React.FC = () => {
   });
 
   // Helper function to convert File to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = (error) => reject(error);
     });
-  };
 
   // Submit function with raw JSON
-  const submitCribReport = async (values: RegisterFormValues) => {
+  const submitCribReport = async (
+    values: RegisterFormValues,
+    resetForm: FormikHelpers<RegisterFormValues>["resetForm"]
+  ) => {
     try {
-      // Convert files to base64
       const nicFrontBase64 = values.nicFront ? await fileToBase64(values.nicFront) : "";
       const nicBackBase64 = values.nicBack ? await fileToBase64(values.nicBack) : "";
 
-      // Create payload
       const payload = {
         userName: values.userName,
         nic: values.nic,
@@ -67,14 +67,7 @@ const CustomerLogin: React.FC = () => {
         email: values.email,
       };
 
-      // Console log for debugging 
-      console.log("Payload structure:", {
-        userName: payload.userName,
-        nic: payload.nic,
-        email: payload.email,
-        nicFront: nicFrontBase64 ? `base64 string (${nicFrontBase64.length} chars)` : "empty",
-        nicBack: nicBackBase64 ? `base64 string (${nicBackBase64.length} chars)` : "empty",
-      });
+      console.log("Payload:", payload);
 
       const res = await fetch(`${apiUrl}users/request/crib/report`, {
         method: "POST",
@@ -93,27 +86,17 @@ const CustomerLogin: React.FC = () => {
 
       const data = await res.json();
       console.log("Report submitted successfully:", data);
-      toast.success("Report submitted successfully!");
-      
+      toast.success("CRIB report request successfully recorded. We will send you via email within 24hours!");
+
+      // Reset form and previews
+      resetForm();
+      setPreviewFront(null);
+      setPreviewBack(null);
     } catch (error) {
       console.error("Error submitting report:", error);
       toast.error("An error occurred while submitting report");
     }
   };
-
-  // Handle submit
-  const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("Submitting form...");
-    await submitCribReport(values);
-  };
-
-  // Cleanup function for object URLs
-  useEffect(() => {
-    return () => {
-      if (previewFront) URL.revokeObjectURL(previewFront);
-      if (previewBack) URL.revokeObjectURL(previewBack);
-    };
-  }, [previewFront, previewBack]);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6 relative overflow-hidden">
@@ -129,11 +112,11 @@ const CustomerLogin: React.FC = () => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={handleSubmit}
+            onSubmit={(values, { resetForm }) => submitCribReport(values, resetForm)}
           >
             {({ setFieldValue, isSubmitting }) => (
               <Form className="space-y-4">
-                {/* User Name */}
+                {/* Full Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Full Name
@@ -147,14 +130,10 @@ const CustomerLogin: React.FC = () => {
                       className="w-full pl-12 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                   </div>
-                  <ErrorMessage
-                    name="userName"
-                    component="p"
-                    className="text-red-500 text-xs mt-1.5 ml-1"
-                  />
+                  <ErrorMessage name="userName" component="p" className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn" />
                 </div>
 
-                {/* NIC */}
+                {/* NIC Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     NIC Number
@@ -168,11 +147,7 @@ const CustomerLogin: React.FC = () => {
                       className="w-full pl-12 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                   </div>
-                  <ErrorMessage
-                    name="nic"
-                    component="p"
-                    className="text-red-500 text-xs mt-1.5 ml-1"
-                  />
+                  <ErrorMessage name="nic" component="p" className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn" />
                 </div>
 
                 {/* Email */}
@@ -189,14 +164,10 @@ const CustomerLogin: React.FC = () => {
                       className="w-full pl-12 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                   </div>
-                  <ErrorMessage
-                    name="email"
-                    component="p"
-                    className="text-red-500 text-xs mt-1.5 ml-1"
-                  />
+                  <ErrorMessage name="email" component="p" className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn" />
                 </div>
 
-                {/* NIC Front Upload */}
+                {/* NIC Front */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     NIC Front Image
@@ -209,7 +180,6 @@ const CustomerLogin: React.FC = () => {
                         const file = e.target.files?.[0] || null;
                         setFieldValue("nicFront", file);
                         if (file) {
-                          // Revoke previous URL to prevent memory leaks
                           if (previewFront) URL.revokeObjectURL(previewFront);
                           setPreviewFront(URL.createObjectURL(file));
                         }
@@ -217,10 +187,7 @@ const CustomerLogin: React.FC = () => {
                       className="hidden"
                       id="nicFront"
                     />
-                    <label
-                      htmlFor="nicFront"
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
+                    <label htmlFor="nicFront" className="cursor-pointer flex flex-col items-center gap-2">
                       {previewFront ? (
                         <img
                           src={previewFront}
@@ -230,21 +197,15 @@ const CustomerLogin: React.FC = () => {
                       ) : (
                         <>
                           <Upload className="w-6 h-6 text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            Upload NIC Front
-                          </span>
+                          <span className="text-sm text-gray-600">Upload NIC Front</span>
                         </>
                       )}
                     </label>
                   </div>
-                  <ErrorMessage
-                    name="nicFront"
-                    component="p"
-                    className="text-red-500 text-xs mt-1.5 ml-1"
-                  />
+                  <ErrorMessage name="nicFront" component="p" className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn" />
                 </div>
 
-                {/* NIC Back Upload */}
+                {/* NIC Back */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     NIC Back Image
@@ -257,7 +218,6 @@ const CustomerLogin: React.FC = () => {
                         const file = e.target.files?.[0] || null;
                         setFieldValue("nicBack", file);
                         if (file) {
-                          // Revoke previous URL to prevent memory leaks
                           if (previewBack) URL.revokeObjectURL(previewBack);
                           setPreviewBack(URL.createObjectURL(file));
                         }
@@ -265,10 +225,7 @@ const CustomerLogin: React.FC = () => {
                       className="hidden"
                       id="nicBack"
                     />
-                    <label
-                      htmlFor="nicBack"
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
+                    <label htmlFor="nicBack" className="cursor-pointer flex flex-col items-center gap-2">
                       {previewBack ? (
                         <img
                           src={previewBack}
@@ -278,25 +235,19 @@ const CustomerLogin: React.FC = () => {
                       ) : (
                         <>
                           <Upload className="w-6 h-6 text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            Upload NIC Back
-                          </span>
+                          <span className="text-sm text-gray-600">Upload NIC Back</span>
                         </>
                       )}
                     </label>
                   </div>
-                  <ErrorMessage
-                    name="nicBack"
-                    component="p"
-                    className="text-red-500 text-xs mt-1.5 ml-1"
-                  />
+                  <ErrorMessage name="nicBack" component="p" className="text-red-500 text-[.7rem] absolute lg:right-20 md:right-10 right-14 font-bold animate__animated animate__fadeIn" />
                 </div>
 
                 {/* Submit */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-main text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                  className="w-full bg-main text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2 group"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
