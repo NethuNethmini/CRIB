@@ -33,7 +33,7 @@ interface FormValues {
 }
 
 const AddUserForm: React.FC = () => {
-  const { username } = useAppSelector((state) => state.auth) as any;
+  // const { username } = useAppSelector((state) => state.auth) as any;
   const mnemonic = useAppSelector((state) => state.auth.mnemonic) || "";
   const token = useAppSelector((state) => state.auth.auth) || "";
   const bankName = useAppSelector((state)=> state.auth.bankName) || "";

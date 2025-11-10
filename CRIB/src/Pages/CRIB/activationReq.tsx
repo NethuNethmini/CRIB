@@ -31,7 +31,7 @@ const RPC_ENDPOINT: string = import.meta.env.VITE_RPC_ENDPOINT;
 
 export default function ActivationReq() {
   const token = useAppSelector((state) => state.auth.auth);
-  const mnemonic = useAppSelector((state) => state.wallet.mnemonic.mnemonic);
+  const mnemonic = useAppSelector((state) => state.wallet.mnemonic);
 
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);

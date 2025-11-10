@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Mail, User, IdCard, Upload, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import Logo from "../../Components/Logo/logo";
 import AOS from "aos";
 import "aos/dist/aos.css";
