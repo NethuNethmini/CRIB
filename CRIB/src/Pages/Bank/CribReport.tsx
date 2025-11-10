@@ -102,87 +102,88 @@ const CribReportViewer: React.FC = () => {
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // Mock data - replace with actual API call
-            const mockData: ApiResponse = {
-                status: "success",
-                code: 200,
-                message: "CRIB report retrieved successfully",
-                cribReport: {
-                    cribAccountDetails: {
-                        nic: nic || "499012345678",
-                        cribId: "CRIB-499012345678",
-                        fullName: "Sahan Perera",
-                        dateOfBirth: "1990-01-31",
-                        isActive: true,
-                        phoneNumber: "+94771234567",
-                        email: "sahan.perera@example.com",
-                        nicFrontCid: "bafybeifrontniccidexample",
-                        nicBackCid: "bafybeibackniccidexample",
-                        createdBy: bankId || "ICC900001",
-                        createdAt: "2025-11-08T05:58:20Z",
-                        creator: ""
-                    },
-                    creditFacilities: [
-                        {
-                            facilityId: "1093dbe5-e207-469e-86a8-47afdc1ecda5",
-                            cribUsernic: nic || "499012345678",
-                            licenseNumber: bankId || "ICC900001",
-                            institution: bankName || "Acme Bank PLC",
-                            facilityType: "PERSONAL_LOAN",
-                            loanAmount: 500000,
-                            outstandingBalance: 500000,
-                            status: 1,
-                            openedDate: "2024-04-10",
-                            closedDate: "2025-03-09",
-                            paymentHistory: [
-                                {
-                                    paymentId: "",
-                                    date: "2024-05-10",
-                                    amount: 25000,
-                                    status: 1
-                                }
-                            ],
-                            creator: "cosmos1hyq02yp8rk738sgv05xd4hspzuh4uyutuq3qhg"
-                        },
-                        {
-                            facilityId: "2e8931f3-9bf3-42bb-be0e-d86f62e721e1",
-                            cribUsernic: nic || "499012345678",
-                            licenseNumber: bankId || "ICC900001",
-                            institution: bankName || "Acme Bank PLC",
-                            facilityType: "HOME_LOAN",
-                            loanAmount: 800000,
-                            outstandingBalance: 750000,
-                            status: 1,
-                            openedDate: "2024-04-10",
-                            closedDate: "2025-03-09",
-                            paymentHistory: [
-                                {
-                                    paymentId: "",
-                                    date: "2024-05-10",
-                                    amount: 50000,
-                                    status: 1
-                                }
-                            ],
-                            creator: "cosmos1hyq02yp8rk738sgv05xd4hspzuh4uyutuq3qhg"
-                        }
-                    ],
-                    totalFacilities: 2,
-                    activeFacilities: 2,
-                    closedFacilities: 0,
-                    totalLoanAmount: 1300000,
-                    totalOutstanding: 1250000,
-                    onTimePayments: 2,
-                    latePayments: 0,
-                    missedPayments: 0,
-                    onTimePaymentRatio: 100,
-                    creditScore: 820
-                },
-                requestId: "req-499012345678",
-                timestamp: "2025-11-08T08:39:32Z"
-            };
+            // const mockData: ApiResponse = {
+            //     status: "success",
+            //     code: 200,
+            //     message: "CRIB report retrieved successfully",
+            //     cribReport: {
+            //         cribAccountDetails: {
+            //             nic: nic || "499012345678",
+            //             cribId: "CRIB-499012345678",
+            //             fullName: "Sahan Perera",
+            //             dateOfBirth: "1990-01-31",
+            //             isActive: true,
+            //             phoneNumber: "+94771234567",
+            //             email: "sahan.perera@example.com",
+            //             nicFrontCid: "bafybeifrontniccidexample",
+            //             nicBackCid: "bafybeibackniccidexample",
+            //             createdBy: bankId || "ICC900001",
+            //             createdAt: "2025-11-08T05:58:20Z",
+            //             creator: ""
+            //         },
+            //         creditFacilities: [
+            //             {
+            //                 facilityId: "1093dbe5-e207-469e-86a8-47afdc1ecda5",
+            //                 cribUsernic: nic || "499012345678",
+            //                 licenseNumber: bankId || "ICC900001",
+            //                 institution: bankName || "Acme Bank PLC",
+            //                 facilityType: "PERSONAL_LOAN",
+            //                 loanAmount: 500000,
+            //                 outstandingBalance: 500000,
+            //                 status: 1,
+            //                 openedDate: "2024-04-10",
+            //                 closedDate: "2025-03-09",
+            //                 paymentHistory: [
+            //                     {
+            //                         paymentId: "",
+            //                         date: "2024-05-10",
+            //                         amount: 25000,
+            //                         status: 1
+            //                     }
+            //                 ],
+            //                 creator: "cosmos1hyq02yp8rk738sgv05xd4hspzuh4uyutuq3qhg"
+            //             },
+            //             {
+            //                 facilityId: "2e8931f3-9bf3-42bb-be0e-d86f62e721e1",
+            //                 cribUsernic: nic || "499012345678",
+            //                 licenseNumber: bankId || "ICC900001",
+            //                 institution: bankName || "Acme Bank PLC",
+            //                 facilityType: "HOME_LOAN",
+            //                 loanAmount: 800000,
+            //                 outstandingBalance: 750000,
+            //                 status: 1,
+            //                 openedDate: "2024-04-10",
+            //                 closedDate: "2025-03-09",
+            //                 paymentHistory: [
+            //                     {
+            //                         paymentId: "",
+            //                         date: "2024-05-10",
+            //                         amount: 50000,
+            //                         status: 1
+            //                     }
+            //                 ],
+            //                 creator: "cosmos1hyq02yp8rk738sgv05xd4hspzuh4uyutuq3qhg"
+            //             }
+            //         ],
+            //         totalFacilities: 2,
+            //         activeFacilities: 2,
+            //         closedFacilities: 0,
+            //         totalLoanAmount: 1300000,
+            //         totalOutstanding: 1250000,
+            //         onTimePayments: 2,
+            //         latePayments: 0,
+            //         missedPayments: 0,
+            //         onTimePaymentRatio: 100,
+            //         creditScore: 820
+            //     },
+            //     requestId: "req-499012345678",
+            //     timestamp: "2025-11-08T08:39:32Z"
+            // };
 
            
         } catch (err) {
             setError('Failed to fetch CRIB report. Please try again.');
+            console.log(err)
         } finally {
             setLoading(false);
         }
