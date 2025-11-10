@@ -41,6 +41,12 @@ export const navItems: NavItem[] = [
     path: "/reports",
     roles: ["crib"], 
   },
+  {
+    label: "Crib Report",
+    icon: <UserCheck size={18} />,
+    path: "/crib-report",
+    roles: ["bank"],
+  },
 
   
 ];

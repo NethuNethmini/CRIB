@@ -1,9 +1,8 @@
 import { ChevronDown} from "lucide-react";
-import { useAppSelector } from "../../Store/hooks";
 
 
 function Header() {
-  const bankName = useAppSelector((state) => state.auth.bankName);
+  // const bankName = useAppSelector((state) => state.auth.bankName);
   
   return (
     <div>

@@ -52,6 +52,8 @@ const Register: React.FC = () => {
     });
   }, []);
 
+  
+
   // Register Bank
   const registerBank = async (values: RegisterFormValues) => {
     try {

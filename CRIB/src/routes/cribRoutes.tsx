@@ -15,4 +15,6 @@ export const cribRoutes = [
  {path:"/reports" , element:<ReportApproval/>},
  {path:"/generate-report", element:<GenerateReport/>}
 
+
+
 ];

@@ -56,13 +56,10 @@ export default function VerificationCode(): JSX.Element {
 
   // Handle input change
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number,
-    values: VerificationValues,
-    setFieldValue: (field: string, value: any) => void
-  ) => {
+e: React.ChangeEvent<HTMLInputElement>, index: number, values: { code: any[]; }, setFieldValue: (field: string, value: any) => void) => {
     const value = e.target.value.replace(/\D/g, "").slice(-1);
     setFieldValue(`code[${index}]`, value);
+    console.log(values)
 
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();

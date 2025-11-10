@@ -76,6 +76,28 @@ export default function Facilities() {
     AOS.init({ duration: 800, once: true });
   }, []);
 
+  const transfer = async (address: string) => {
+    try {
+      const res = await fetch(API_URL + 'bank/faucet', {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          "walletAddress": address,
+        })
+      })
+
+      if(res.ok){
+        const data = await res.json()
+        console.log(data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const addPayment = () => {
     if (!paymentDate || !paymentAmount) {
       toast.error("Please fill payment date and amount");
@@ -102,7 +124,7 @@ export default function Facilities() {
     toast.success("Payment removed");
   };
 
-  const createFacility = async (txBytes: Uint8Array, bankName: string) => {
+  const createFacility = async (txBytes: string, bankName: string) => {
     try {
       const res = await fetch(`${API_URL}bank/broadcast/create/credit/facility`, {
         method: "POST",
@@ -110,7 +132,7 @@ export default function Facilities() {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ txBytes: Array.from(txBytes), bankName }),
+        body: JSON.stringify({ txBytes: txBytes, bankName }),
       });
 
       if (res.ok) {
@@ -137,10 +159,12 @@ export default function Facilities() {
     }
 
     try {
-      const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { 
-        prefix: "cosmos" 
+      const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        prefix: "cosmos"
       });
       const [account] = await wallet.getAccounts();
+
+      await transfer(account.address)
 
       const registry = new Registry([
         ...defaultRegistryTypes,
@@ -148,10 +172,12 @@ export default function Facilities() {
       ]);
 
       const client = await SigningStargateClient.connectWithSigner(
-        RPC_ENDPOINT, 
-        wallet, 
+        RPC_ENDPOINT,
+        wallet,
         { registry }
       );
+
+      console.log("this is form data : ", formData)
 
       const paymentRecords: PaymentRecord[] = paymentHistory.map((p) => ({
         date: p.date,
@@ -171,26 +197,28 @@ export default function Facilities() {
         openedDate: formData.openedDate,
         closedDate: formData.closedDate || "",
         paymentHistory: paymentRecords,
-        
+
       };
+
+      console.log("this is msg ", msg)
 
       const msgAny = {
         typeUrl: "/crib.creditfacility.v1.MsgCreateCreditFacility",
         value: msg,
       };
 
-      const fee = { 
-        amount: [{ denom: "stake", amount: "5000" }], 
-        gas: "200000" 
+      const fee = {
+        amount: [{ denom: "stake", amount: "5000" }],
+        gas: "200000"
       };
 
       toast.loading("Broadcasting transaction...", { id: "broadcast" });
 
       // Broadcast transaction
       const result = await client.signAndBroadcast(
-        account.address, 
-        [msgAny], 
-        fee, 
+        account.address,
+        [msgAny],
+        fee,
         "Create Credit Facility"
       );
 
@@ -201,17 +229,18 @@ export default function Facilities() {
 
         
         const signedTx = await client.sign(
-          account.address, 
-          [msgAny], 
-          fee, 
+          account.address,
+          [msgAny],
+          fee,
           "Create Credit Facility"
         );
 
       
         const txBytes = TxRaw.encode(signedTx).finish();
+        const signBytesBase64 = Buffer.from(txBytes).toString("base64");
 
         if (bankName) {
-          await createFacility(txBytes, bankName);
+          await createFacility(signBytesBase64, bankName);
         } else {
           toast.error("Bank name missing, cannot broadcast to backend");
         }
@@ -241,9 +270,9 @@ export default function Facilities() {
           </div>
 
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-            <Formik 
-              initialValues={initialValues} 
-              validationSchema={validationSchema} 
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
               onSubmit={handleSubmit}
             >
               {({ isSubmitting }) => (
@@ -252,30 +281,30 @@ export default function Facilities() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium mb-2">CRIB User NIC</label>
-                      <Field 
-                        type="text" 
-                        name="cribUsernic" 
-                        placeholder="199012345678" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                      <Field
+                        type="text"
+                        name="cribUsernic"
+                        placeholder="199012345678"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <ErrorMessage 
-                        name="cribUsernic" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="cribUsernic"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">License Number</label>
-                      <Field 
-                        type="text" 
-                        name="licenseNumber" 
-                        placeholder="CBC2024999" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                      <Field
+                        type="text"
+                        name="licenseNumber"
+                        placeholder="CBC2024999"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <ErrorMessage 
-                        name="licenseNumber" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="licenseNumber"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                   </div>
@@ -283,23 +312,23 @@ export default function Facilities() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium mb-2">Institution</label>
-                      <Field 
-                        type="text" 
-                        name="institution" 
-                        placeholder="Acme Bank PLC" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                      <Field
+                        type="text"
+                        name="institution"
+                        placeholder="Acme Bank PLC"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <ErrorMessage 
-                        name="institution" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="institution"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Facility Type</label>
-                      <Field 
-                        as="select" 
-                        name="facilityType" 
+                      <Field
+                        as="select"
+                        name="facilityType"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select Type</option>
@@ -310,10 +339,10 @@ export default function Facilities() {
                         <option value="BUSINESS_LOAN">Business Loan</option>
                         <option value="OVERDRAFT">Overdraft</option>
                       </Field>
-                      <ErrorMessage 
-                        name="facilityType" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="facilityType"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                   </div>
@@ -321,23 +350,23 @@ export default function Facilities() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium mb-2">Loan Amount</label>
-                      <Field 
-                        type="number" 
-                        name="loanAmount" 
-                        placeholder="500000" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                      <Field
+                        type="number"
+                        name="loanAmount"
+                        placeholder="500000"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <ErrorMessage 
-                        name="loanAmount" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="loanAmount"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Status</label>
-                      <Field 
-                        as="select" 
-                        name="status" 
+                      <Field
+                        as="select"
+                        name="status"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select Status</option>
@@ -345,10 +374,10 @@ export default function Facilities() {
                         <option value={FacilityStatus.CLOSED}>Closed</option>
                         <option value={FacilityStatus.DEFAULTED}>Defaulted</option>
                       </Field>
-                      <ErrorMessage 
-                        name="status" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="status"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                   </div>
@@ -356,28 +385,28 @@ export default function Facilities() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium mb-2">Opened Date</label>
-                      <Field 
-                        type="date" 
-                        name="openedDate" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                      <Field
+                        type="date"
+                        name="openedDate"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <ErrorMessage 
-                        name="openedDate" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="openedDate"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Closed Date (Optional)</label>
-                      <Field 
-                        type="date" 
-                        name="closedDate" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                      <Field
+                        type="date"
+                        name="closedDate"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <ErrorMessage 
-                        name="closedDate" 
-                        component="div" 
-                        className="text-red-500 text-sm mt-1" 
+                      <ErrorMessage
+                        name="closedDate"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
                     </div>
                   </div>
@@ -426,9 +455,9 @@ export default function Facilities() {
                       </div>
 
                       <div className="flex items-end">
-                        <button 
-                          type="button" 
-                          onClick={addPayment} 
+                        <button
+                          type="button"
+                          onClick={addPayment}
                           className="w-full py-2 bg-main text-white rounded-lg transition-colors flex items-center justify-center gap-2"
                         >
                           <Plus size={18} /> Add Payment
@@ -453,19 +482,18 @@ export default function Facilities() {
                               <span className="text-green-600 font-semibold">
                                 ${payment.amount.toLocaleString()}
                               </span>
-                              <span 
-                                className={`px-2 py-0.5 rounded-full text-xs ${
-                                  payment.status === 1 
-                                    ? "bg-green-100 text-green-700" 
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs ${payment.status === 1
+                                    ? "bg-green-100 text-green-700"
                                     : "bg-yellow-100 text-yellow-700"
-                                }`}
+                                  }`}
                               >
                                 {payment.status === 1 ? "Paid" : "Pending"}
                               </span>
                             </div>
-                            <button 
-                              type="button" 
-                              onClick={() => removePayment(index)} 
+                            <button
+                              type="button"
+                              onClick={() => removePayment(index)}
                               className="text-red-500 hover:text-red-700 transition-colors"
                             >
                               <Trash2 size={18} />
@@ -477,16 +505,16 @@ export default function Facilities() {
                   </div>
 
                   <div className="flex justify-end gap-3 mt-8 pt-6 ">
-                    <button 
-                      type="reset" 
-                      onClick={() => setPaymentHistory([])} 
+                    <button
+                      type="reset"
+                      onClick={() => setPaymentHistory([])}
                       className="px-6 py-2 text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-300 transition-colors"
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting} 
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
                       className="px-6 py-2 bg-main text-white rounded-lg font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? "Submitting..." : "Submit"}
